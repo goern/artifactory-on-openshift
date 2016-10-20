@@ -1,0 +1,39 @@
+== Central Service: Artifact Repository
+
+* for many kind of artifacts
+* an ingress and remix point
+
+=== Building the Artifactory container image
+
+```
+cd images/artifactory
+make push
+```
+
+==== Open Issues
+
+* Put some sane default configuration via ConfigMap
+
+=== Creating Artifactory template
+
+`oc create -f artifactory.yaml`
+
+=== Creating Artifactory application
+
+`oc new-app artifactory`
+
+=== Remove application from OCP
+
+```
+oc scale deploymentconfig artifactory-postgresql --replicas=0
+oc delete service artifactory
+oc delete service artifactory-postgresql
+oc delete petset artifactory
+oc delete deploymentconfig artifactory-postgresql
+oc delete routes artifactory
+oc delete pod --all
+oc delete imagestream artifactory
+oc delete template artifactory
+```
+
+Persisten Volumes are not deleted using these commands.
