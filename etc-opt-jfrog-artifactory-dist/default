@@ -1,0 +1,9 @@
+#!/bin/sh
+
+export ARTIFACTORY_USER=artifactory
+
+export TOMCAT_HOME=/var/opt/jfrog/artifactory/tomcat
+export ARTIFACTORY_PID=/var/opt/jfrog/run/artifactory.pid
+
+export JAVA_OPTIONS="-server -Xms512m -Xmx2g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\"kill -9 %p\""
+export JAVA_OPTIONS="$JAVA_OPTIONS -Djruby.compile.invokedynamic=false -Dfile.encoding=UTF8 -Dartdist=rpm -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true -Djava.security.egd=file:/dev/./urandom"

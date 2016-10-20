@@ -1,0 +1,60 @@
+== Central Service: Artifact Repository
+
+* for many kind of artifacts
+* an ingress and remix point
+
+=== Building the Artifactory container image
+
+Please change to `container-image` and have a look at the `Makefile`, change
+`REPOSITORY_NAME` according to your needs.
+
+A simple `make push` should do the rest.
+
+```
+cd images/artifactory
+make push
+```
+
+Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.yaml` and in the `Dockerfile`
+
+image::https://api.bintray.com/packages/goern/registry/goern%3Aartifactory-oss/images/download.svg[link="https://bintray.com/goern/registry/goern%3Aartifactory-oss/_latestVersion"]
+
+==== Open Issues
+
+* Put some sane default configuration via ConfigMap
+
+=== Creating Artifactory template
+
+An OpenShift template is provided and could be used to instanciate new Artifactory
+applications. Therefore the template needs to be created on OpenShift: `oc create -f openshift-template.yaml`.
+This assumes that you have create a project on OpenShift, for detailed instruction
+see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
+
+=== Creating Artifactory application
+
+Deploying Artifactory on OpenShift is a simple step of instanciating a new
+application on OpenShift. To provide default configurations to Artifactory,
+a ConfigMap will be used, this is not created by the template. Please create
+it beforehand:
+
+```
+oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
+oc new-app artifactory
+```
+
+=== Remove application from OCP
+
+```
+oc scale deploymentconfig artifactory-postgresql --replicas=0
+oc delete service artifactory
+oc delete service artifactory-postgresql
+oc delete petset artifactory
+oc delete deploymentconfig artifactory-postgresql
+oc delete routes artifactory
+oc delete pod --all
+oc delete imagestream artifactory
+oc delete configmap artifactory-default-config
+oc delete template artifactory
+```
+
+Persisten Volumes are not deleted using these commands.
