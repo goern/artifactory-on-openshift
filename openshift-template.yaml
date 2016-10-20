@@ -16,14 +16,15 @@ objects:
     creationTimestamp: null
   spec:
     tags:
-      - name: 4.13.2
+      - name: "${ARTIFACTORY_VERSION}"
         from:
           kind: DockerImage
-          name: goern-docker-registry.bintray.io/goern/artifactory-oss:4.13.2-2
+          name: "${ARTIFACTORY_REPOSITORY_NAME}/${ARTIFACTORY_IMAGE_NAME}:${ARTIFACTORY_VERSION}"
+        importPolicy: {}
       - name: latest
         from:
           kind: ImageStreamTag
-          name: 4.13.2
+          name: "${ARTIFACTORY_VERSION}"
 # This is fake for PetSet on NFS
 - kind: PersistentVolumeClaim
   apiVersion: v1
@@ -151,7 +152,7 @@ objects:
       spec:
         containers:
         - name: artifactory
-          image: ' '
+          image: "${ARTIFACTORY_REPOSITORY_NAME}/${ARTIFACTORY_IMAGE_NAME}:${ARTIFACTORY_VERSION}"
           imagePullPolicy: IfNotPresent
           env:
           - name: ARTIFACTORY_HOME
@@ -167,15 +168,17 @@ objects:
             initialDelaySeconds: 30
             periodSeconds: 10
             successThreshold: 1
-            tcpSocket:
-              port: 8081
             timeoutSeconds: 1
+            httpGet:
+              path: /artifactory
+              port: 8081
           ports:
           - containerPort: 8081
             protocol: TCP
           resources:
             limits:
-              memory: 1024Mi
+              cpu: 512m
+              memory: 1536Mi
           securityContext:
             capabilities: {}
             privileged: false
@@ -198,8 +201,6 @@ objects:
           configMap:
             name: artifactory-default-config
             items:
-              - key: storage.properties
-                path: storage.properties
               - key: default
                 path: default
               - key: artifactory.system.properties
@@ -371,4 +372,19 @@ parameters:
     displayName: Volume Capacity
     description: 'Volume space available for data, e.g. 512Mi, 2Gi.'
     value: 1Gi
+    required: true
+  - name: ARTIFACTORY_VERSION
+    displayName: Artifactory Version
+    description: 'Version of the Artifactory container image to be used'
+    value: "4.13.2-8"
+    required: true
+  - name: ARTIFACTORY_REPOSITORY_NAME
+    displayName: Artifactory Repository name
+    description: 'Name of the repository containing the Artifactory container image to be used'
+    value: 'goern-docker-registry.bintray.io/goern'
+    required: true
+  - name: ARTIFACTORY_IMAGE_NAME
+    displayName: Artifactory container image name
+    description: 'Name of the Artifactory container image to be used'
+    value: 'artifactory-oss'
     required: true

@@ -23,6 +23,10 @@ obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immu
 
 ### Backup
 
+### Liveness Probe
+
+Have a look at it again...
+
 ## Copyright
 
 Copyright (C) 2016 Red Hat Inc.

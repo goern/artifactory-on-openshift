@@ -17,6 +17,8 @@ make push
 
 Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.yaml` and in the `Dockerfile`
 
+image::https://api.bintray.com/packages/goern/registry/goern%3Aartifactory-oss/images/download.svg[link="https://bintray.com/goern/registry/goern%3Aartifactory-oss/_latestVersion"]
+
 ==== Open Issues
 
 * Put some sane default configuration via ConfigMap

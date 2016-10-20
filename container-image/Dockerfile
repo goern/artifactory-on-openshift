@@ -37,14 +37,16 @@ COPY run-artifactory.sh /usr/bin/
 RUN chmod +x /usr/bin/run-artifactory.sh && \
     mkdir -p /var/opt/jfrog/artifactory/logs/catalina /opt/jfrog/artifactory/logs/ /var/opt/jfrog/artifactory/etc && \
     chown -R 1013:0 /usr/bin/run-artifactory.sh $HOME $ARTIFACTORY_HOME /var/opt/jfrog/artifactory/ /etc/opt/jfrog/ && \
-    chmod 777 /var/opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/logs/catalina /opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/etc
+    chmod g+rwx /var/opt/jfrog/artifactory /opt/jfrog/artifactory && \
+    chmod 777 /var/opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/logs/catalina /opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/etc /opt/jfrog/artifactory/tomcat/ && \
+    chgrp 0 /opt/jfrog/artifactory/tomcat/webapps && \
+    cp /usr/share/java/postgresql-jdbc3.jar /opt/jfrog/artifactory/tomcat/lib
 
-VOLUME [ "/opt/jfrog/artifactory/tomcat/logs"]
+VOLUME [ "/opt/jfrog/artifactory/tomcat/logs", "/var/opt/jfrog/artifactory/data", "/var/opt/jfrog/artifactory/backup" ]
 
 EXPOSE 8081
 
+USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-USER 1013
-
-ENV BUILD_VERSION 2
+ENV BUILD_VERSION 8

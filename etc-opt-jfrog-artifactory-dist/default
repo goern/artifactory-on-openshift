@@ -2,7 +2,7 @@
 
 export ARTIFACTORY_USER=artifactory
 
-export TOMCAT_HOME=/opt/jfrog/artifactory/tomcat
+export TOMCAT_HOME=/var/opt/jfrog/artifactory/tomcat
 export ARTIFACTORY_PID=/var/opt/jfrog/run/artifactory.pid
 
 export JAVA_OPTIONS="-server -Xms512m -Xmx2g -Xss256k -XX:+UseG1GC -XX:OnOutOfMemoryError=\"kill -9 %p\""
