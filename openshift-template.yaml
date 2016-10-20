@@ -19,7 +19,7 @@ objects:
       - name: 4.13.2
         from:
           kind: DockerImage
-          name: goern/artifactory-oss:4.13.2
+          name: goern-docker-registry.bintray.io/goern/artifactory-oss:4.13.2-2
       - name: latest
         from:
           kind: ImageStreamTag
@@ -151,11 +151,11 @@ objects:
       spec:
         containers:
         - name: artifactory
-          image: goern/artifactory-oss:4.13.2
+          image: ' '
           imagePullPolicy: IfNotPresent
           env:
           - name: ARTIFACTORY_HOME
-            value: '/opt/jfrog/artifactory'
+            value: '/var/opt/jfrog/artifactory'
           - name: DATABASE_USER
             value: '${DATABASE_USER}'
           - name: DATABASE_PASSWORD
@@ -181,6 +181,8 @@ objects:
             privileged: false
           terminationMessagePath: /dev/termination-log
           volumeMounts:
+          - name: artifactory-etc
+            mountPath: /etc/opt/jfrog/artifactory/
           - mountPath: /var/opt/jfrog/artifactory/data
             name: artifactory-data
           - mountPath: /var/opt/jfrog/artifactory/backup
@@ -192,6 +194,18 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
+        - name: artifactory-etc
+          configMap:
+            name: artifactory-default-config
+            items:
+              - key: storage.properties
+                path: storage.properties
+              - key: default
+                path: default
+              - key: artifactory.system.properties
+                path: artifactory.system.properties
+              - key: artifactory.config.xml
+                path: artifactory.config.xml
         - name: artifactory-data
           persistentVolumeClaim:
             claimName: artifactory-data

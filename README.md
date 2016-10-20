@@ -3,29 +3,17 @@
 This is Artifactory on OpenShift, a containerized version of Artifactory OSS
 with an OpenShift template.
 
-## Building the Container Image
-
-Please change to `container-image` and have a look at the `Makefile`, change
-`REPOSITORY_NAME` according to your needs.
-
-A simple `make push` should do the rest.
-
-## Using the Template
-
-An OpenShift template is provided and could be used to instanciate new Artifactory
-applications. Therefore the template needs to be created on OpenShift: `oc create -f openshift-template.yaml`.
-This assumes that you have create a project on OpenShift, for detailed instruction
-see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
-
 ## Deploying Artifactory
 
-Deploying Artifactory on OpenShift is a simple step of instanciating a new
-application on OpenShift: `oc new-app artifactory`.
+For a detailed description see Artifactory.asciidoc
 
 ## Using Artifactory
 
 Point your browser at the domainname of the route created by the template, use
 `oc get route` to see the current value.
+
+TIP: Any changes you do to the config files will be overwritten by the values
+obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immutable!
 
 ## Open Issues
 
