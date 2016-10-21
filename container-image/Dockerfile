@@ -2,7 +2,7 @@ FROM openshift/base-centos7
 
 MAINTAINER Christoph Görn <goern@redhat.com>
 
-ENV ARTIFACTORY_VERSION="4.13.2"
+ENV ARTIFACTORY_VERSION="4.14.0"
 ENV ARTIFACTORY_HOME="/var/opt/jfrog/artifactory"
 
 LABEL name="JFrog Artifactory OSS" \
@@ -14,8 +14,8 @@ LABEL name="JFrog Artifactory OSS" \
       io.openshift.expose-services="8081,artifactory" \
       io.openshift.tags="artifactory" \
       build-date="2016-10-20" \
-      version="4.13.2" \
-      release="2"
+      version="4.14.0" \
+      release="1"
 
 WORKDIR /opt/jfrog/artifactory
 
@@ -49,4 +49,4 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 8
+ENV BUILD_VERSION 1

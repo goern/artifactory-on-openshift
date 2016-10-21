@@ -3,7 +3,7 @@
 This is Artifactory on OpenShift, a containerized version of Artifactory OSS
 with an OpenShift template.
 
-It is a proof of concept, Version 1.0.0
+It is a proof of concept, Version 1.1.0
 
 ## Deploying Artifactory
 
@@ -19,8 +19,6 @@ obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immu
 
 ## Open Issues
 
-### PostgreSQL Integration
-
 ### Migration
 
 ### Backup
@@ -28,6 +26,17 @@ obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immu
 ### Liveness Probe
 
 Have a look at it again...
+
+## Limitations
+
+The PostgreSQL service create by the provided template is a single node, so
+there is no redundancy or scale up...
+
+The Artifactory service has no scale up feature, it must not be scale to more
+than one pod.
+
+Storage configuration of Artifactory expects to use PostgreSQL, its hard coded
+within the entrypoint of the container image.
 
 ## Copyright
 
