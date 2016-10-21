@@ -152,7 +152,7 @@ objects:
       spec:
         containers:
         - name: artifactory
-          image: "${ARTIFACTORY_REPOSITORY_NAME}/${ARTIFACTORY_IMAGE_NAME}:${ARTIFACTORY_VERSION}"
+          image: "${ARTIFACTORY_REPOSITORY_NAME}/${ARTIFACTORY_IMAGE_NAME}:latest"
           imagePullPolicy: IfNotPresent
           env:
           - name: ARTIFACTORY_HOME
@@ -376,7 +376,7 @@ parameters:
   - name: ARTIFACTORY_VERSION
     displayName: Artifactory Version
     description: 'Version of the Artifactory container image to be used'
-    value: "4.13.2-8"
+    value: "4.14.0-1"
     required: true
   - name: ARTIFACTORY_REPOSITORY_NAME
     displayName: Artifactory Repository name
