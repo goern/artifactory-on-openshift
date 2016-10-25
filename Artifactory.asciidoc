@@ -19,10 +19,6 @@ Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.
 
 `make push` will build and push the Pro and OSS version of Artifactory.
 
-==== Open Issues
-
-* Put some sane default configuration via ConfigMap
-
 === Creating Artifactory template
 
 An OpenShift template is provided and could be used to instanciate new Artifactory
@@ -42,7 +38,25 @@ oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifac
 ```
 
 If you want to use the Pro version of Artifactory, please provide a license key
-via a contif map, und overwrite the *ARTIFACTORY_IMAGE_NAME* of the template:
+via the config map, and overwrite the *ARTIFACTORY_IMAGE_NAME* of the template.
+
+==== Artifactory default Config Map
+
+To configure Artifactory a config map is created from the contents of `etc-opt-jfrog-artifactory-dist/`.
+The following files must be present:
+```
+-rw-rw-r--. 1 user group  9858 Oct 22 19:58 artifactory.config.xml
+-rw-rw-r--. 1 user group   856 Oct 24 16:14 artifactory.lic
+-rw-rw-r--. 1 user group 11045 Oct 22 19:58 artifactory.system.properties
+-rw-rw-r--. 1 user group   476 Oct 22 19:58 default
+-rw-rw-r--. 1 user group  6858 Oct 22 19:58 logback.xml
+-rw-rw-r--. 1 user group  5546 Oct 22 19:58 mimetypes.xml
+```
+
+Especially `artifactory.lic` is required if you run the Pro version.
+
+The following commands will create the config map and instanciate the new Artifactory
+application.
 
 ```
 oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
