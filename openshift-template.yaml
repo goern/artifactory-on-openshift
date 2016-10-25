@@ -1,12 +1,13 @@
 kind: Template
 apiVersion: v1
 labels:
-  template: artifactory
+  version: 4.14.0-1
   group: infrastructure
 metadata:
   annotations:
     description: Creates the infrastructure for the end-to-end content and security management story.
     tags: instant-app,artifactory
+    version: 4.14.0-1
   name: artifactory
 objects:
 - kind: ImageStream
@@ -178,7 +179,7 @@ objects:
           resources:
             limits:
               cpu: 512m
-              memory: 1536Mi
+              memory: 768Mi
           securityContext:
             capabilities: {}
             privileged: false
@@ -207,6 +208,8 @@ objects:
                 path: artifactory.system.properties
               - key: artifactory.config.xml
                 path: artifactory.config.xml
+              - key: artifactory.lic
+                path: artifactory.lic
         - name: artifactory-data
           persistentVolumeClaim:
             claimName: artifactory-data

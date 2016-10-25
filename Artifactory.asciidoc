@@ -11,13 +11,13 @@ Please change to `container-image` and have a look at the `Makefile`, change
 A simple `make push` should do the rest.
 
 ```
-cd images/artifactory
+cd container-image
 make push
 ```
 
 Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.yaml` and in the `Dockerfile`
 
-image::https://api.bintray.com/packages/goern/registry/goern%3Aartifactory-oss/images/download.svg[link="https://bintray.com/goern/registry/goern%3Aartifactory-oss/_latestVersion"]
+`make push` will build and push the Pro and OSS version of Artifactory.
 
 ==== Open Issues
 
@@ -39,7 +39,14 @@ it beforehand:
 
 ```
 oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
-oc new-app artifactory
+```
+
+If you want to use the Pro version of Artifactory, please provide a license key
+via a contif map, und overwrite the *ARTIFACTORY_IMAGE_NAME* of the template:
+
+```
+oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
+oc new-app --template=acme-dev-infra/artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro # or artifactory-oss
 ```
 
 === Remove application from OCP
@@ -57,4 +64,4 @@ oc delete configmap artifactory-default-config
 oc delete template artifactory
 ```
 
-Persisten Volumes are not deleted using these commands.
+Persistent Volumes are not deleted using these commands.
