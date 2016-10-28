@@ -166,12 +166,12 @@ objects:
             value: '${DATABASE_NAME}'
           livenessProbe:
             failureThreshold: 3
-            initialDelaySeconds: 30
+            initialDelaySeconds: 130
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
             httpGet:
-              path: /artifactory
+              path: /
               port: 8081
           ports:
           - containerPort: 8081
