@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  vars:
+    artifactory_host: http://artifactory-acme-dev-infra.apps.acme.e2e.bos.redhat.com/artifactory/api/repositories/
+    repositories:
+      - key: testing-local
+        rclass: local
+        description: This is a local generic repository created via REST API, its for testing purpose only.
+        packageType: "generic"
+      - key: hello-msa-local
+        rclass: local
+        description: Maven repository for Red Hat Hello World Microservices Java implementation
+        packageType: "maven"
+      - key: bonjour-msa-local
+        rclass: local
+        description: Maven repository for Red Hat Hello World Microservices NodeJS implementation
+        packageType: "npm"
+
+  tasks:
+  - name: create repository
+    uri:
+      url: "{{ artifactory_host }}{{ item.key }}"
+      method: PUT
+      user: admin
+      password: password
+      body: "{{ item | to_json }}"
+      HEADER_Content-Type: "application/vnd.org.jfrog.artifactory.repositories.LocalRepositoryConfiguration+json"
+      register: repository
+    with_items:
+      "{{ repositories }}"
+    ignore_errors: yes
