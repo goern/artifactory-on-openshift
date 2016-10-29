@@ -70,7 +70,7 @@ At least you need to customize the hostname of Artifactory, to see which hostnam
 is currently used, try `oc get route artifactory -o template --template={{.spec.host}}`.
 This hostname should be set as variable `artifactory_host` in the playbook.
 
-To execute the playbook run `ansible-playbook init-playbook.yaml`. If the
+To execute the playbook run `cd playbooks && ansible-playbook create-default-repositories.yaml`. If the
 repositories exists, failures will be shown, but ignored by the ansible execution.
 
 === Remove application from OCP
