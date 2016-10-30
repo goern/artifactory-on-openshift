@@ -1,0 +1,37 @@
+---
+- name: Check if the Artifactory is available
+  tags:
+    - openshift
+    - service_check
+    - artifactory
+
+  hosts: localhost
+  vars: # FIXME DRY
+    openshift_master_url: https://acme-ocp3-haproxy-0.acme.e2e.bos.redhat.com:8443
+    admin_username: pltops
+    admin_password: password
+
+  tasks:
+  - name: Verify oc version
+    shell: "oc version"
+    register: command_result
+    failed_when:
+      - "'oc v1.3.1' not in command_result.stdout"
+      - "'oc v3.3' not in command_result.stdout"
+
+  - name: Login in OpenShift as administrator
+    shell: "oc login --insecure-skip-tls-verify=true -u {{ admin_username }} -p {{ admin_password }} {{ openshift_master_url }}"
+
+  - name: get URL of Artifactory website
+    command: oc get route artifactory -o template --template=\{\{.spec.host\}\}
+    register: website_url
+
+  - name: get content from Artifactory website
+    uri:
+      url: "http://{{ website_url.stdout }}/artifactory/webapp/#/home"
+      return_content: true
+    register: webpage_result
+
+  - name: check if correct content was returned
+    action: fail
+    when: "'Application code' not in webpage_result.content"

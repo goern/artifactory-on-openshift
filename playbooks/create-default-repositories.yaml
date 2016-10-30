@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars:
-    artifactory_host: http://artifactory-acme-dev-infra.apps.acme.e2e.bos.redhat.com/artifactory/api/repositories/
+    artifactory_api: http://artifactory-acme-dev-infra.apps.acme.e2e.bos.redhat.com/artifactory/api/
     local_repositories:
       - key: testing-local
         rclass: local
@@ -26,7 +26,7 @@
   tasks:
   - name: create local repository
     uri:
-      url: "{{ artifactory_host }}{{ item.key }}"
+      url: "{{ artifactory_api }}repositories/{{ item.key }}"
       method: PUT
       user: admin
       password: password
@@ -39,7 +39,7 @@
 
   - name: create remote repository
     uri:
-      url: "{{ artifactory_host }}{{ item.key }}"
+      url: "{{ artifactory_api }}repositories/{{ item.key }}"
       method: PUT
       user: admin
       password: password

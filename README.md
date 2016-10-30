@@ -19,13 +19,9 @@ obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immu
 
 ## Open Issues
 
-### Migration
+### Updates
 
 ### Backup
-
-### Liveness Probe
-
-Have a look at it again...
 
 ## Limitations
 
