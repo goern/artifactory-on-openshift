@@ -31,11 +31,7 @@ see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html
 Deploying Artifactory on OpenShift is a simple step of instanciating a new
 application on OpenShift. To provide default configurations to Artifactory,
 a ConfigMap will be used, this is not created by the template. Please create
-it beforehand:
-
-```
-oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
-```
+it beforehand.
 
 If you want to use the Pro version of Artifactory, please provide a license key
 via the config map, and overwrite the *ARTIFACTORY_IMAGE_NAME* of the template.
@@ -72,6 +68,8 @@ This hostname should be set as variable `artifactory_host` in the playbook.
 
 To execute the playbook run `cd playbooks && ansible-playbook create-default-repositories.yaml`. If the
 repositories exists, failures will be shown, but ignored by the ansible execution.
+
+These steps are implemented and provided for your convenience as an <<playbooks/deploy-service.yaml#Ansible playbook,Ansible playbook>>.
 
 === Remove application from OCP
 
