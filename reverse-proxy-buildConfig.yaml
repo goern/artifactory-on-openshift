@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: artifactory-reverse-proxy
+  labels:
+    application: artifactory-reverse-proxy
+spec:
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+  runPolicy: Serial
+  source:
+    type: Git
+    git:
+      uri: http://gogs-acme-dev-infra.apps.acme.e2e.bos.redhat.com/goern/artifactory-on-openshift.git
+      contextDir: container-image/reverse-proxy-nginx
+  strategy:
+    type: Source
+    sourceStrategy:
+       from:
+        kind: "ImageStreamTag"
+        name: "s2i-nginx:latest"
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "artifactory-reverse-proxy:latest"

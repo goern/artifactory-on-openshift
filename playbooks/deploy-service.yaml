@@ -10,6 +10,8 @@
     openshift_master_url: https://acme-ocp3-haproxy-0.acme.e2e.bos.redhat.com:8443
     username: pltops
     password: password
+    project_name: artifactory
+    artifactory_pro_or_oss: pro
 
   tasks:
   - name: verify oc version
@@ -19,17 +21,24 @@
       - "'oc v1.3.1' not in command_result.stdout"
       - "'oc v3.3' not in command_result.stdout"
 
-  - name: login in OpenShift as administrator
+  - name: login to OpenShift as administrator
     command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
 
-  - name: use Acme Corp IT Development infrastructure project
-    command: "oc project acme-dev-infra"
+  - name: make sure to use the right project
+    command: "oc project {{ project_name }}"
+    ignore_errors: true
 
   - name: create template for artifactory
     command: oc create -f ../openshift-template.yaml
+    register: artifactory_template_rc
+    ignore_errors: true
+
+  - name: replace existing template for artifactory
+    command: oc replace -f ../openshift-template.yaml
+    when: artifactory_template_rc|failed
 
   - name: create Artifactory default ConfigMap
-    command: create configmap artifactory-default-config --from-file=../etc-opt-jfrog-artifactory-dist/
+    shell: cd .. && oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
 
-  - name: create Artifactory Pro application
-    command: oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro
+  - name: "create Artifactory {{ artifactory_pro_or_oss }} application"
+    command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}"

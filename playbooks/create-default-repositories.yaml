@@ -6,22 +6,35 @@
       - key: testing-local
         rclass: local
         description: This is a local generic repository created via REST API, its for testing purpose only.
-        packageType: "generic"
-      - key: hello-msa-local
-        rclass: local
-        description: Maven repository for Red Hat Hello World Microservices Java implementation
-        packageType: "maven"
-      - key: bonjour-msa-local
-        rclass: local
-        description: Maven repository for Red Hat Hello World Microservices NodeJS implementation
-        packageType: "npm"
+        packageType: generic
     remote_repositories:
+      - key: redhat-ga-remote
+        rclass: remote
+        description: Red Hat GA repository
+        packageType: maven
+        url: https://maven.repository.redhat.com/ga
+      - key: jboss-fuse-remote
+        rclass: remote
+        description: JBoss Fuse repository
+        packageType: maven
+        url: https://repo.fusesource.com/nexus/content/groups/public/
+      - key: repo1-maven-org-remote
+        rclass: remote
+        description: Maven Central
+        packageType: maven
+        url: https://repo1.maven.org/maven2/
       - key: npm-org-remote
         rclass: remote
         description: a caching proxy for npmjs.org
-        packageType: "npm"
-        repoLayoutRef: "npm-default"
-        url: "https://registry.npmjs.org/"
+        packageType: npm
+        repoLayoutRef: npm-default
+        url: https://registry.npmjs.org/
+      - key: bower-github-remote
+        rclass: remote
+        description: a caching proxy for Bower
+        packageType: bower
+        repoLayoutRef: bower-default
+        url: https://github.com/
 
   tasks:
   - name: create local repository

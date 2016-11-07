@@ -1,0 +1,46 @@
+---
+- name: Undeploy Artifactory
+  tags:
+    - openshift
+    - artifactory
+    - undeploy
+
+  hosts: localhost
+  vars: # FIXME DRY
+    openshift_master_url: https://acme-ocp3-haproxy-0.acme.e2e.bos.redhat.com:8443
+    username: pltops
+    password: password
+    project_name: artifactory
+
+  tasks:
+  - name: verify oc version
+    shell: "oc version"
+    register: command_result
+    failed_when:
+      - "'oc v1.3.1' not in command_result.stdout"
+      - "'oc v3.3' not in command_result.stdout"
+
+  - name: login to OpenShift as administrator
+    command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
+
+  - name: make sure to use the right project
+    command: "oc project {{ project_name }}"
+
+  - name: delete all artifactory components
+    command: oc delete {{ item.type }} {{ item.name }}
+    with_items:
+      - { type: imagestream, name: artifactory }
+      - { type: petset, name: artifactory }
+      - { type: pod, name: artifactory-0 }
+      - { type: dc, name: artifactory-postgresql }
+      - { type: service, name: artifactory }
+      - { type: service, name: artifactory-postgresql }
+      - { type: route, name: artifactory }
+      - { type: template, name: artifactory }
+      - { type: configmap, name: artifactory-default-config }
+      - { type: pvc, name: artifactory-postgresql }
+      - { type: pvc, name: artifactory-logs-artifactory-0 }
+      - { type: pvc, name: artifactory-backup-artifactory-0 }
+      - { type: pvc, name: artifactory-data-artifactory-0 }
+      - { type: pvc, name: artifactory-var-artifactory-0 }
+    ignore_errors: true
