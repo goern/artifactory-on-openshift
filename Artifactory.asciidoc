@@ -1,17 +1,17 @@
-== Central Service: Artifact Repository
+=== Central Service: Artifact Repository
 
 * for many kind of artifacts
 * an ingress and remix point
 
-=== Building the Artifactory container image
+==== Building the Artifactory container image
 
-Please change to `container-image` and have a look at the `Makefile`, change
+Please change to `container-image/artifactory` and have a look at the `Makefile`, change
 `REPOSITORY_NAME` according to your needs.
 
 A simple `make push` should do the rest.
 
 ```
-cd container-image
+cd container-image/artifactory
 make push
 ```
 
@@ -19,14 +19,14 @@ Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.
 
 `make push` will build and push the Pro and OSS version of Artifactory.
 
-=== Creating Artifactory template
+==== Creating Artifactory template
 
 An OpenShift template is provided and could be used to instanciate new Artifactory
 applications. Therefore the template needs to be created on OpenShift: `oc create -f openshift-template.yaml`.
 This assumes that you have create a project on OpenShift, for detailed instruction
 see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
 
-=== Creating Artifactory application
+==== Creating Artifactory application
 
 Deploying Artifactory on OpenShift is a simple step of instanciating a new
 application on OpenShift. To provide default configurations to Artifactory,
@@ -36,7 +36,7 @@ it beforehand.
 If you want to use the Pro version of Artifactory, please provide a license key
 via the config map, and overwrite the *ARTIFACTORY_IMAGE_NAME* of the template.
 
-==== Artifactory default Config Map
+===== Artifactory default Config Map
 
 To configure Artifactory a config map is created from the contents of `etc-opt-jfrog-artifactory-dist/`.
 The following files must be present:
@@ -59,7 +59,7 @@ oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifac
 oc new-app --template=acme-dev-infra/artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro # or artifactory-oss
 ```
 
-=== Initializing Artifactory
+==== Initializing Artifactory
 
 To get a quick start an Ansible playbook is provided to create a few repositories.
 At least you need to customize the hostname of Artifactory, to see which hostname
@@ -71,7 +71,7 @@ repositories exists, failures will be shown, but ignored by the ansible executio
 
 These steps are implemented and provided for your convenience as an <<playbooks/deploy-service.yaml#Ansible playbook,Ansible playbook>>.
 
-=== Remove application from OCP
+==== Remove application from OCP
 
 ```
 oc scale deploymentconfig artifactory-postgresql --replicas=0
