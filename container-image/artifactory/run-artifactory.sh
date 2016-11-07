@@ -15,5 +15,8 @@ username=${DATABASE_USER}
 password=${DATABASE_PASSWORD}
 EOF
 
+cat "Current storage configuration"
+cat /etc/opt/jfrog/artifactory/storage.properties
+
 cd /var/opt/jfrog/artifactory/bin/
 ./artifactory.sh
