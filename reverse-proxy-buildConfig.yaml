@@ -1,26 +1,120 @@
+kind: Template
 apiVersion: v1
-kind: BuildConfig
+labels:
+  version: 1.2.0-1
+  group: infrastructure
 metadata:
-  name: artifactory-reverse-proxy
-  labels:
-    application: artifactory-reverse-proxy
-spec:
-  triggers:
-    - type: ConfigChange
-    - type: ImageChange
-  runPolicy: Serial
-  source:
-    type: Git
-    git:
-      uri: http://gogs-acme-dev-infra.apps.acme.e2e.bos.redhat.com/goern/artifactory-on-openshift.git
-      contextDir: container-image/reverse-proxy-nginx
-  strategy:
-    type: Source
-    sourceStrategy:
-       from:
-        kind: "ImageStreamTag"
-        name: "s2i-nginx:latest"
-  output:
+  annotations:
+    description: This is a nginx based reverse proxy for Artifactory's docker repositories
+    tags: artifactory,reverseproxy,nginx,instant-app
+    version: 1.2.0-1
+  name: artifactory-rev-proxy
+objects:
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: artifactory-rev-proxy
+    annotations:
+      description: 'nginx based reverse proxy for Artifactory Docker repositories'
+      service.alpha.openshift.io/dependencies: '[{"name":"artifactory","namespace":"","kind":"Service"}]'
+  spec:
+    ports:
+      -
+        name: web
+        port: 80
+        targetPort: 8080
+    selector:
+      name: artifactory-rev-proxy
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: artifactory-rev-proxy
+    annotations:
+      description: "Defines how to deploy artifactory-rev-proxy"
+  spec:
+    strategy:
+      type: Rolling
+    triggers:
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+            - artifactory-rev-proxy
+          from:
+            kind: ImageStreamTag
+            name: artifactory-rev-proxy:latest
+      - type: ConfigChange
+    replicas: 2
+    selector:
+      name: artifactory-rev-proxy
+    template:
+      metadata:
+        name: artifactory-rev-proxy
+        labels:
+          name: artifactory-rev-proxy
+      spec:
+        containers:
+          - name: artifactory-rev-proxy
+            image: ' '
+            ports:
+              - containerPort: 8080
+            readinessProbe:
+              failureThreshold: 3
+              httpGet:
+                path: /
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 2
+            livenessProbe:
+              failureThreshold: 3
+              httpGet:
+                path: /
+                port: 8080
+                scheme: HTTP
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              successThreshold: 1
+              timeoutSeconds: 2
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: artifactory-rev-proxy
+  spec:
+    host: ""
     to:
-      kind: "ImageStreamTag"
-      name: "artifactory-reverse-proxy:latest"
+      kind: Service
+      name: artifactory-rev-proxy
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: artifactory-rev-proxy
+    labels:
+      application: artifactory-rev-proxy
+  spec:
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+    runPolicy: Serial
+    source:
+      type: Git
+      git:
+        uri: http://gogs-acme-dev-infra.apps.acme.e2e.bos.redhat.com/goern/artifactory-on-openshift.git
+      contextDir: container-image/reverse-proxy-nginx
+    strategy:
+      type: Source
+      sourceStrategy:
+         from:
+          kind: ImageStreamTag
+          name: s2i-nginx-acme:latest
+    output:
+      to:
+        kind: ImageStreamTag
+        name: artifactory-rev-proxy:latest
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    description: This is a nginx based reverse proxy for Artifactory's docker repositories
+    name: artifactory-rev-proxy
