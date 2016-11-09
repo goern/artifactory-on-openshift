@@ -78,6 +78,10 @@ objects:
               periodSeconds: 10
               successThreshold: 1
               timeoutSeconds: 2
+            resources:
+              limits:
+                cpu: 25m
+                memory: 16Mi
 - kind: Route
   apiVersion: v1
   metadata:
