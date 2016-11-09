@@ -7,9 +7,9 @@
 
   hosts: localhost
   vars: # FIXME DRY
-    openshift_master_url: https://acme-ocp3-haproxy-0.acme.e2e.bos.redhat.com:8443
-    username: pltops
-    password: password
+    openshift_master_url: "{{ lookup('env','OCP_URL') }}"
+    username: "{{ lookup('env','OCP_USER') }}"
+    password: "{{ lookup('env','OCP_PASSWORD') }}"
     project_name: artifactory
     artifactory_pro_or_oss: pro
 
