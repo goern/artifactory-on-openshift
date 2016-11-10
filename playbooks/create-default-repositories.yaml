@@ -35,9 +35,25 @@
         packageType: bower
         repoLayoutRef: bower-default
         url: https://github.com/
+      - key: docker-io-remote
+        rclass: remote
+        description: a caching proxy for Docker Hub
+        packageType: docker
+        url: https://registry-1.docker.io/
+      - key: access-redhat-com-remote
+        rclass: remote
+        description: a caching proxy for the Red Hat registry
+        packageType: docker
+        url: https://registry.access.redhat.com/
+    virtual_repositories:
+      - key: docker-registry
+        rclass: virtual
+        packageType: docker
+        description: ACME Corp Docker Registry
+        artifactoryRequestsCanRetrieveRemoteArtifacts: true
 
   tasks:
-  - name: create local repository
+  - name: create local repositories
     uri:
       url: "{{ artifactory_api }}repositories/{{ item.key }}"
       method: PUT
@@ -50,7 +66,7 @@
       "{{ local_repositories }}"
     ignore_errors: yes
 
-  - name: create remote repository
+  - name: create remote repositories
     uri:
       url: "{{ artifactory_api }}repositories/{{ item.key }}"
       method: PUT
@@ -61,4 +77,17 @@
       register: repository
     with_items:
       "{{ remote_repositories }}"
+    ignore_errors: yes
+
+  - name: create virtual repositories
+    uri:
+      url: "{{ artifactory_api }}repositories/{{ item.key }}"
+      method: PUT
+      user: admin
+      password: password
+      body: "{{ item | to_json }}"
+      HEADER_Content-Type: "application/vnd.org.jfrog.artifactory.repositories.VirtualRepositoryConfiguration+json"
+      register: repository
+    with_items:
+      "{{ virtual_repositories }}"
     ignore_errors: yes
