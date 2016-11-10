@@ -87,7 +87,7 @@ objects:
   metadata:
     name: artifactory-rev-proxy
   spec:
-    host: ""
+    host: docker-registry.artifactory-acme-dev-infra.apps.acme.e2e.bos.redhat.com
     to:
       kind: Service
       name: artifactory-rev-proxy
