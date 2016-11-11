@@ -15,14 +15,14 @@ cd container-image/artifactory
 make push
 ```
 
-Mind the Gap! There is a build id in the `Makefile` and the `openshift-template.yaml` and in the `Dockerfile`
+Mind the Gap! There is a build id in the `Makefile` and the `artifactory.yaml` and in the `Dockerfile`
 
 `make push` will build and push the Pro and OSS version of Artifactory.
 
 ==== Creating Artifactory template
 
 An OpenShift template is provided and could be used to instanciate new Artifactory
-applications. Therefore the template needs to be created on OpenShift: `oc create -f openshift-template.yaml`.
+applications. Therefore the template needs to be created on OpenShift: `oc create -f artifactory.yaml`.
 This assumes that you have create a project on OpenShift, for detailed instruction
 see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
 
