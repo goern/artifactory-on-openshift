@@ -2,7 +2,7 @@ FROM openshift/base-centos7
 
 MAINTAINER Christoph Görn <goern@redhat.com>
 
-ENV ARTIFACTORY_VERSION="4.14.0"
+ENV ARTIFACTORY_VERSION="4.14.1"
 ENV ARTIFACTORY_HOME="/var/opt/jfrog/artifactory"
 
 # the license lable makes a statement about this Dockerfile not the packages software
@@ -14,9 +14,9 @@ LABEL name="JFrog Artifactory Pro" \
       summary="The world's most advanced repository manager. Artifactory offers powerful enterprise feature and fine-grained permission control behind a sleek and easy-to-use UI." \
       io.openshift.expose-services="8081,artifactory" \
       io.openshift.tags="artifactory" \
-      build-date="2016-10-24" \
-      version="4.14.0" \
-      release="2"
+      build-date="2016-11-15" \
+      version="4.14.1" \
+      release="1"
 
 WORKDIR /opt/jfrog/artifactory
 
@@ -42,7 +42,8 @@ RUN chmod +x /usr/bin/run-artifactory.sh && \
     chmod g+rwx /var/opt/jfrog/artifactory /opt/jfrog/artifactory && \
     chmod 777 /var/opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/logs/catalina /opt/jfrog/artifactory/logs /var/opt/jfrog/artifactory/etc /opt/jfrog/artifactory/tomcat/ && \
     chgrp 0 /opt/jfrog/artifactory/tomcat/webapps && \
-    cp /usr/share/java/postgresql-jdbc3.jar /opt/jfrog/artifactory/tomcat/lib
+    cp /usr/share/java/postgresql-jdbc3.jar /opt/jfrog/artifactory/tomcat/lib && \
+    keytool -importcert -keystore /etc/pki/ca-trust/extracted/javacacerts -storepass changeit -file /opt/jfrog/artifactory/sso.crt -alias “sso-root” -noprompt -trustcacerts
 
 VOLUME [ "/opt/jfrog/artifactory/tomcat/logs", "/var/opt/jfrog/artifactory/data", "/var/opt/jfrog/artifactory/backup" ]
 
@@ -51,4 +52,4 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 2
+ENV BUILD_VERSION 1
