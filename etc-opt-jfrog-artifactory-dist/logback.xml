@@ -106,7 +106,7 @@
         </triggeringPolicy>
     </appender>
     <root>
-        <level value="warn"/>
+        <level value="info"/>
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
