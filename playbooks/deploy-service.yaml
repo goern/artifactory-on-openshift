@@ -10,7 +10,7 @@
     openshift_master_url: "{{ lookup('env','OCP_URL') }}"
     username: "{{ lookup('env','OCP_USER') }}"
     password: "{{ lookup('env','OCP_PASSWORD') }}"
-    project_name: artifactory
+    project_name: acme-dev-infra
     artifactory_pro_or_oss: pro
 
   tasks:
@@ -29,12 +29,12 @@
     ignore_errors: true
 
   - name: create template for artifactory
-    command: oc create -f ../openshift-template.yaml
+    command: oc create -f ../artifactory.yaml
     register: artifactory_template_rc
     ignore_errors: true
 
   - name: replace existing template for artifactory
-    command: oc replace -f ../openshift-template.yaml
+    command: oc replace -f ../artifactory.yaml
     when: artifactory_template_rc|failed
 
   - name: create Artifactory default ConfigMap

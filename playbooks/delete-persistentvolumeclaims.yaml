@@ -1,5 +1,5 @@
 ---
-- name: Undeploy Artifactory
+- name: Delete all Artifactory PersistentVolumeClaims
   tags:
     - openshift
     - artifactory
@@ -26,19 +26,12 @@
   - name: make sure to use the right project
     command: "oc project {{ project_name }}"
 
-  - name: scale down PostgreSQL to zero pods
-    command: oc scale --replicas=0 dc artifactory-postgresql
-
-  - name: delete all Artifactory components
+  - name: delete all Artifactory PersistentVolumeClaim
     command: oc delete {{ item.type }} {{ item.name }}
     with_items:
-      - { type: imagestream, name: artifactory }
-      - { type: petset, name: artifactory }
-      - { type: pod, name: artifactory-0 }
-      - { type: dc, name: artifactory-postgresql }
-      - { type: service, name: artifactory }
-      - { type: service, name: artifactory-postgresql }
-      - { type: route, name: artifactory }
-      - { type: template, name: artifactory }
-      - { type: configmap, name: artifactory-default-config }
+      - { type: pvc, name: artifactory-postgresql }
+      - { type: pvc, name: artifactory-logs-artifactory-0 }
+      - { type: pvc, name: artifactory-backup-artifactory-0 }
+      - { type: pvc, name: artifactory-data-artifactory-0 }
+      - { type: pvc, name: artifactory-var-artifactory-0 }
     ignore_errors: true

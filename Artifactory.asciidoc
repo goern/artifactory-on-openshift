@@ -68,6 +68,8 @@ This hostname should be set as variable `artifactory_host` in the playbook.
 
 To execute the playbook run `cd playbooks && ansible-playbook create-default-repositories.yaml`. If the
 repositories exists, failures will be shown, but ignored by the ansible execution.
+Please make sure that any Docker type repositories have Token Authentication
+enabled.
 
 These steps are implemented and provided for your convenience as an <<playbooks/deploy-service.yaml#Ansible playbook,Ansible playbook>>.
 
