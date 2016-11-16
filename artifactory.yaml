@@ -1,13 +1,13 @@
 kind: Template
 apiVersion: v1
 labels:
-  version: 4.14.0-2
+  version: 4.14.1-1
   group: infrastructure
 metadata:
   annotations:
     description: Creates the infrastructure for the end-to-end content and security management story.
     tags: instant-app,artifactory
-    version: 4.14.0-2
+    version: 4.14.1-1
   name: artifactory
 objects:
 - kind: ImageStream
@@ -208,6 +208,8 @@ objects:
                 path: artifactory.system.properties
               - key: artifactory.config.xml
                 path: artifactory.config.xml
+              - key: logback.xml
+                path: logback.xml
               - key: artifactory.lic
                 path: artifactory.lic
         - name: artifactory-data
@@ -281,7 +283,7 @@ objects:
         imageChangeParams:
           automatic: true
           containerNames:
-            - postgresql
+            - artifactory-postgresql
           from:
             kind: ImageStreamTag
             namespace: openshift
@@ -300,7 +302,7 @@ objects:
           - name: data
             emptyDir: {}
         containers:
-          - name: postgresql
+          - name: artifactory-postgresql
             image: ' '
             ports:
               - containerPort: 5432

@@ -16,7 +16,7 @@ LABEL name="JFrog Artifactory OSS" \
       io.openshift.tags="artifactory" \
       build-date="2016-11-15" \
       version="4.14.1" \
-      release="1"
+      release="2"
 
 WORKDIR /opt/jfrog/artifactory
 
@@ -51,4 +51,4 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 1
+ENV BUILD_VERSION 2
