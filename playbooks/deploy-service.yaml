@@ -10,7 +10,7 @@
     openshift_master_url: "{{ lookup('env','OCP_URL') }}"
     username: "{{ lookup('env','OCP_USER') }}"
     password: "{{ lookup('env','OCP_PASSWORD') }}"
-    project_name: acme-dev-infra
+    project_name: artifactory-test
     artifactory_pro_or_oss: pro
 
   tasks:
@@ -24,9 +24,14 @@
   - name: login to OpenShift as administrator
     command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
 
-  - name: make sure to use the right project
+  - name: "make sure to use project {{ project_name }}"
     command: "oc project {{ project_name }}"
+    register: project_exists
     ignore_errors: true
+
+  - name: "create project {{ project_name }}"
+    command: "oc new-project {{ project_name }}"
+    when: project_exists | failed
 
   - name: create template for artifactory
     command: oc create -f ../artifactory.yaml
@@ -35,10 +40,22 @@
 
   - name: replace existing template for artifactory
     command: oc replace -f ../artifactory.yaml
-    when: artifactory_template_rc|failed
+    when: artifactory_template_rc | failed
+
+  - name: create template for artifactory reverse proxy
+    command: oc create -f ../reverse-proxy.yaml
+    register: reverse_proxy_template_rc
+    ignore_errors: true
+
+  - name: replace existing template for artifactory reverse proxy
+    command: oc replace -f ../reverse-proxy.yaml
+    when: reverse_proxy_template_rc | failed
 
   - name: create Artifactory default ConfigMap
     shell: cd .. && oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
 
   - name: "create Artifactory {{ artifactory_pro_or_oss }} application"
-    command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}"
+    command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}-acme --param=ARTIFACTORY_REPOSITORY_NAME=goern-docker-registry.bintray.io"
+
+  - name: create Artifactory reverse proxy
+    command: oc new-app --template=artifactory-rev-proxy --param=DOCKER_REGISTRY_HOSTNAME="docker-registry-artifactory-test.apps.acme.e2e.bos.redhat.com"
