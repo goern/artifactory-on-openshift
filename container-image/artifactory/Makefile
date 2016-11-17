@@ -1,6 +1,6 @@
 REPOSITORY_NAME := goern-docker-registry.bintray.io/goern
 ARTIFACTORY_VERSION := 4.14.1
-BUILD := 1
+BUILD := 3
 
 .PHONY: push clean pro oss
 oss:

@@ -3,7 +3,7 @@
 This is Artifactory on OpenShift, a containerized version of Artifactory OSS
 with an OpenShift template.
 
-It is a proof of concept, Version 1.2.0
+It is a proof of concept, Version 1.3.0
 
 ## Deploying Artifactory
 

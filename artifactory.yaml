@@ -1,13 +1,13 @@
 kind: Template
 apiVersion: v1
 labels:
-  version: 4.14.1-1
+  version: 4.14.1-3
   group: infrastructure
 metadata:
   annotations:
     description: Creates the infrastructure for the end-to-end content and security management story.
     tags: instant-app,artifactory
-    version: 4.14.1-1
+    version: 4.14.1-3
   name: artifactory
 objects:
 - kind: ImageStream
@@ -381,7 +381,7 @@ parameters:
   - name: ARTIFACTORY_VERSION
     displayName: Artifactory Version
     description: 'Version of the Artifactory container image to be used'
-    value: "4.14.1-1"
+    value: "4.14.1-3"
     required: true
   - name: ARTIFACTORY_REPOSITORY_NAME
     displayName: Artifactory Repository name
