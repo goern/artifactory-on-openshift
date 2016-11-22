@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars:
-    artifactory_api: http://artifactory-acme-dev-infra.apps.acme.e2e.bos.redhat.com/artifactory/api/
+    artifactory_api: "{{ lookup('env','ARTIFACTORY_API_URL') }}"
     local_repositories:
       - key: testing-generic-local
         rclass: local
@@ -43,13 +43,11 @@
         rclass: remote
         description: a caching proxy for Docker Hub
         packageType: docker
-        repoLayoutRef: simple
         url: https://registry-1.docker.io/
       - key: access-redhat-com-remote
         rclass: remote
         description: a caching proxy for the Red Hat registry
         packageType: docker
-        repoLayoutRef: simple
         url: https://registry.access.redhat.com/
     virtual_repositories:
       - key: docker-registry
@@ -73,7 +71,6 @@
       register: repository
     with_items:
       "{{ local_repositories }}"
-    ignore_errors: yes
 
   - name: create remote repositories
     uri:
@@ -102,4 +99,4 @@
     ignore_errors: yes
 
   - name: "OpsProc: add local or remote repositories to virtual repositories"
-    debig: msg="dont forget to do it!"
+    debug: msg="dont forget to do it!"

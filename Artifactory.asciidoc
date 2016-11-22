@@ -1,7 +1,103 @@
-=== Central Service: Artifact Repository
+=== Content Management: JFrog Artifact
 
-* for many kind of artifacts
-* an ingress and remix point
+The Content Management (based on a software library) will hold any versioned
+software artifacts (source or binary) that are relevant for production use.
+The Content Governor will use different services provided to accompish the tasks
+of the content management domain. For the purpose of this Reference
+Implementation JFrog Artifactory PRO (short: Artifactory) will be used.
+
+Artifactory will not only be the central point of content ingestion, but will
+also be used as a repository for intermediate binary artifacts.
+
+==== Artifactory Components
+
+===== Artifactory PRO
+
+The main component is Artifactory PRO. It may be deployed on {{OCP}} or on a
+separate host as a standalone application. A base configuration of the
+application is done via a ConfigMap ({{OCP}} case) or classic configuration
+files (standalone case). Data is persistent to volumes and a (persistent)
+PostgreSQL database. Customization, such as creation of repositories required
+for ACME Corp IT-Dev operation, is done via an Ansible playbook.
+
+===== Storage and Database
+
+Storage for artifacts and the PostgreSQL database is provided via a NFS-backed
+PersistentVolumes ({{OCP}}) or the local filesystem of the host running
+Artifactory. The PostgreSQL database is used exclusively for Artifactory
+({{OCP}}). PersistentVolumes are provisioned from one (SPOF, but out of scope)
+NFS server and are not backed up (FAIL, but {{oos}}).
+
+===== Reverse Proxy
+
+To implement Artifactory’s requirements for how to provide a docker registry a
+NGINX based reverse proxy is implemented. This will rewrite URL and pass them
+on to the Artifactory PRO component.
+
+All components can be deployed and undeployed from a single {{OCP}} template
+via an Ansible playbook.
+
+The following diagram will give an overview of the content management
+architecture.
+
+.Content Management Architecture Overview
+image::images/cont-mgmt-architecture.png[Content Management Architecture Overview]
+
+==== Interactions - User Stories
+
+===== Administration by Content Governor (1)
+The first interaction pattern implemented is related to content management,
+including creation of local and remote repositories etc. A role call Content
+Governor would either execute manual task via the Artifactory web user interface
+or automated tasks via the REST API. Both interfaces offer the same functions.
+
+===== Pulling Content for Builds (2)
+The second interaction pattern is related to OCP Builds and ImageStreams. They
+interface with Artifactory via HTTP/HTTPS to access Docker, Maven, NPM or Bower
+repositories. In the case of Docker repository access a reverse proxy (3) is
+used to translate docker registry interactions to Artifactory repository
+interactions. This is required as Artifactory can host any number of Docker
+registries, see the Artifactory documentation for details on Registries and
+Repositories. All other repositories are accessed directly (4) without the need
+of a reverse proxy.
+
+Artifactory configuration and repository data is stored in a PostgreSQL database
+and on a persistent storage volume, provided by a NFS server (5).
+
+===== Proxying Content from remote Repositories (6)
+All so called remote repositories implement a caching proxy for remote/upstream
+repositories. Content within these repositories is cached for a certain amount
+of time on storage. This is especially useful to speed up OCP Builds, as
+required content must not be downloaded from the internet but from Artifactory’s
+caching repository.
+
+==== Implementation of Content Management
+
+Two scenarios for implementation of the Content Management Services are feasible:
+
+ * Artifactory and the reverse proxy via RPMs on a separate host
+ * Artifactory and the reverse proxy as containerized components on OCP
+
+Due to some limitations of Artifactory on OCP, we have chosen to implement
+scenario 1.
+
+Therefor we will deploy a RHEL7.3 host, including a OpenJDK Java runtime
+environment and NGINX as a web-server.
+
+.Artifactory Component Overview
+image::images/cont-mgmt-components.png[Artifactory Component Overview]
+
+Deploying and registering the host is out of scope for this Reference
+Implementation, the following repositories must be enabled:
+
+[format="csv",cols="2"]
+[options="header"]
+[frame="topbot",grid="none"]
+|======
+Repository ID, Repository Name
+rhel-7-server-rpms, Red Hat Enterprise Linux 7 Server (RPMs)
+rhel-server-rhscl-7-rpms, Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server
+|======
 
 ==== Building the Artifactory container image
 
