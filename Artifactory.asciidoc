@@ -1,40 +1,43 @@
-=== Content Management: JFrog Artifact
+== Content Management: JFrog Artifactory
 
 The Content Management (based on a software library) will hold any versioned
 software artifacts (source or binary) that are relevant for production use.
-The Content Governor will use different services provided to accompish the tasks
-of the content management domain. For the purpose of this Reference
+The Content Governor will use different provided services to accomplish the
+tasks of the content management domain. For the purpose of this Reference
 Implementation JFrog Artifactory PRO (short: Artifactory) will be used.
 
 Artifactory will not only be the central point of content ingestion, but will
-also be used as a repository for intermediate binary artifacts.
+also be used as a repository for intermediate binary artifacts, such as
+container images or JAR files.
 
-==== Artifactory Components
 
-===== Artifactory PRO
+=== Artifactory Components
 
-The main component is Artifactory PRO. It may be deployed on {{OCP}} or on a
-separate host as a standalone application. A base configuration of the
-application is done via a ConfigMap ({{OCP}} case) or classic configuration
-files (standalone case). Data is persistent to volumes and a (persistent)
-PostgreSQL database. Customization, such as creation of repositories required
-for ACME Corp IT-Dev operation, is done via an Ansible playbook.
+==== Artifactory PRO
 
-===== Storage and Database
+The main component is Artifactory PRO, a Java based application. It may be
+deployed on {OCP} or on a separate host as a standalone application. A base
+configuration of the application is done via a ConfigMap ({OCP} case) or
+classic configuration files (standalone case). Data is stored one volumes/disks
+and a (persistent) PostgreSQL database. Customization, such as creation of
+repositories required for ACME Corp IT-Dev operation, is done via an Ansible
+playbook.
 
-Storage for artifacts and the PostgreSQL database is provided via a NFS-backed
-PersistentVolumes ({{OCP}}) or the local filesystem of the host running
-Artifactory. The PostgreSQL database is used exclusively for Artifactory
-({{OCP}}). PersistentVolumes are provisioned from one (SPOF, but out of scope)
-NFS server and are not backed up (FAIL, but {{oos}}).
+==== Storage and Database
 
-===== Reverse Proxy
+Storage for artifacts and the PostgreSQL database is provided via NFS-backed
+PersistentVolumes ({OCP}) or the local filesystems of the host running
+Artifactory. The PostgreSQL database is used exclusively for Artifactory.
+PersistentVolumes are provisioned from one (SPOF-FAIL, but {oos})
+NFS server and are not backed up (FAIL-TODO, but {oos}).
 
-To implement Artifactory’s requirements for how to provide a docker registry a
+==== Reverse Proxy
+
+To implement https://www.jfrog.com/confluence/display/RTF/Docker+Registry#DockerRegistry-RegistriesandRepositories[Artifactory’s requirements on how to act as a docker registry] a
 NGINX based reverse proxy is implemented. This will rewrite URL and pass them
 on to the Artifactory PRO component.
 
-All components can be deployed and undeployed from a single {{OCP}} template
+All components can be deployed and undeployed from a single {OCP} template
 via an Ansible playbook.
 
 The following diagram will give an overview of the content management
@@ -43,15 +46,16 @@ architecture.
 .Content Management Architecture Overview
 image::images/cont-mgmt-architecture.png[Content Management Architecture Overview]
 
-==== Interactions - User Stories
 
-===== Administration by Content Governor (1)
+=== Interactions - User Stories
+
+==== Administration by Content Governor (1)
 The first interaction pattern implemented is related to content management,
 including creation of local and remote repositories etc. A role call Content
 Governor would either execute manual task via the Artifactory web user interface
 or automated tasks via the REST API. Both interfaces offer the same functions.
 
-===== Pulling Content for Builds (2)
+==== Pulling Content for Builds (2)
 The second interaction pattern is related to OCP Builds and ImageStreams. They
 interface with Artifactory via HTTP/HTTPS to access Docker, Maven, NPM or Bower
 repositories. In the case of Docker repository access a reverse proxy (3) is
@@ -64,42 +68,99 @@ of a reverse proxy.
 Artifactory configuration and repository data is stored in a PostgreSQL database
 and on a persistent storage volume, provided by a NFS server (5).
 
-===== Proxying Content from remote Repositories (6)
+==== Proxying Content from remote Repositories (6)
 All so called remote repositories implement a caching proxy for remote/upstream
 repositories. Content within these repositories is cached for a certain amount
 of time on storage. This is especially useful to speed up OCP Builds, as
 required content must not be downloaded from the internet but from Artifactory’s
 caching repository.
 
-==== Implementation of Content Management
+
+=== Implementation of Content Management
 
 Two scenarios for implementation of the Content Management Services are feasible:
 
  * Artifactory and the reverse proxy via RPMs on a separate host
- * Artifactory and the reverse proxy as containerized components on OCP
+ * Artifactory and the reverse proxy as containerized components on {OCP}
 
-Due to some limitations of Artifactory on OCP, we have chosen to implement
-scenario 1.
+==== Deploying Artifactory
 
-Therefor we will deploy a RHEL7.3 host, including a OpenJDK Java runtime
-environment and NGINX as a web-server.
+ifndef::artifactory-on-openshift[]
+WARNING: We aim to deploy all components on {OCP}, due to current limitations
+of Artifactory only the reverse proxy is deployed to {OCP} but Artifactory itself
+is running on a separate host.
+
+To deploy Artifactory a RHEL7.3 host needs to be provisioned, including a
+OpenJDK Java runtime environment.
 
 .Artifactory Component Overview
-image::images/cont-mgmt-components.png[Artifactory Component Overview]
+image::images/content-management-implementation.png[Artifactory Component Overview]
 
-Deploying and registering the host is out of scope for this Reference
-Implementation, the following repositories must be enabled:
+Deploying and registering the host is {oos}, the following repositories must be enabled:
 
 [format="csv",cols="2"]
 [options="header"]
 [frame="topbot",grid="none"]
-|======
+|====
 Repository ID, Repository Name
 rhel-7-server-rpms, Red Hat Enterprise Linux 7 Server (RPMs)
 rhel-server-rhscl-7-rpms, Red Hat Software Collections RPMs for Red Hat Enterprise Linux 7 Server
-|======
+|====
 
-==== Building the Artifactory container image
+===== Artifactory on a separate host
+
+Installing Artifactory is described in detail at https://www.jfrog.com/confluence/display/RTF/Installing+Artifactory[Installing Artifactory]
+and could be used as a reference. This section summarizes the commands used:
+```
+$ wget https://bintray.com/jfrog/artifactory-pro-rpms/rpm -O bintray-jfrog-artifactory-pro-rpms.repo
+$ mv bintray-jfrog-artifactory-pro-rpms.repo /etc/yum.repos.d/
+$ yum install -y jfrog-artifactory-pro
+```
+
+Using PostgreSQL or MySQL or the embedded Derby database and how to configure it
+is {oos}.
+
+How to configure the PostgreSQL database is also covered in detail by the Artifactory
+documentation chapter https://www.jfrog.com/confluence/display/RTF/PostgreSQL[Configuring the Database].
+
+Please check that the artifactory service is enabled (use `systemctl enable artifactory`)
+and started. You should see an output similar to this:
+
+[source, bash]
+----
+# systemctl status artifactory
+● artifactory.service - LSB: Start Artifactory on Tomcat
+   Loaded: loaded (/etc/rc.d/init.d/artifactory; bad; vendor preset: disabled)
+   Active: active (running) since Wed 2016-11-23 15:14:56 UTC; 6 days ago
+     Docs: man:systemd-sysv-generator(8)
+  Process: 14248 ExecStop=/etc/rc.d/init.d/artifactory stop (code=exited, status=0/SUCCESS)
+  Process: 14330 ExecStart=/etc/rc.d/init.d/artifactory start (code=exited, status=0/SUCCESS)
+ Main PID: 14387 (java)
+   CGroup: /system.slice/artifactory.service
+           ‣ 14387 //bin/java -Djava.util.logging.config.file=/opt/jfrog/artifactory/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -server -Xms512m -Xmx2g -X...
+
+Nov 23 15:14:51 acme-dev-infra-artifactory.acme.example.com systemd[1]: Starting LSB: Start Artifactory on Tomcat...
+Nov 23 15:14:51 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: /usr/bin/java
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Starting Artifactory tomcat as user artifactory...
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com su[14352]: (to artifactory) root on none
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Max number of open files: 32000
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Using ARTIFACTORY_HOME: /var/opt/jfrog/artifactory
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Using ARTIFACTORY_PID: /var/opt/jfrog/run/artifactory.pid
+Nov 23 15:14:52 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Tomcat started.
+Nov 23 15:14:56 acme-dev-infra-artifactory.acme.example.com artifactory[14330]: Artifactory Tomcat started in normal mode
+Nov 23 15:14:56 acme-dev-infra-artifactory.acme.example.com systemd[1]: Started LSB: Start Artifactory on Tomcat.
+----
+
+To see Artifactory's log output `tail -f $ARTIFACTORY_HOME/logs/artifactory.log` could be used.
+
+TIP: Don’t forget to install your PRO license key via the web user interface.
+
+endif::artifactory-on-openshift[]
+
+ifdef::artifactory-on-openshift[]
+This Chapter needs to be written...
+
+===== Building the Artifactory container image
 
 Please change to `container-image/artifactory` and have a look at the `Makefile`, change
 `REPOSITORY_NAME` according to your needs.
@@ -115,14 +176,14 @@ Mind the Gap! There is a build id in the `Makefile` and the `artifactory.yaml` a
 
 `make push` will build and push the Pro and OSS version of Artifactory.
 
-==== Creating Artifactory template
+===== Creating Artifactory template
 
 An OpenShift template is provided and could be used to instanciate new Artifactory
 applications. Therefore the template needs to be created on OpenShift: `oc create -f artifactory.yaml`.
 This assumes that you have create a project on OpenShift, for detailed instruction
 see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
 
-==== Creating Artifactory application
+===== Creating Artifactory application
 
 Deploying Artifactory on OpenShift is a simple step of instanciating a new
 application on OpenShift. To provide default configurations to Artifactory,
@@ -155,11 +216,11 @@ oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifac
 oc new-app --template=acme-dev-infra/artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro # or artifactory-oss
 ```
 
-==== Initializing Artifactory
+===== Initializing Artifactory
 
 To get a quick start an Ansible playbook is provided to create a few repositories.
 At least you need to customize the hostname of Artifactory, to see which hostname
-is currently used, try `oc get route artifactory -o template --template={{.spec.host}}`.
+is currently used, try `oc get route artifactory -o template --template={.spec.host}`.
 This hostname should be set as variable `artifactory_host` in the playbook.
 
 To execute the playbook run `cd playbooks && ansible-playbook create-default-repositories.yaml`. If the
@@ -169,7 +230,7 @@ enabled.
 
 These steps are implemented and provided for your convenience as an <<playbooks/deploy-service.yaml#Ansible playbook,Ansible playbook>>.
 
-==== Remove application from OCP
+===== Remove application from OCP
 
 ```
 oc scale deploymentconfig artifactory-postgresql --replicas=0
@@ -185,3 +246,70 @@ oc delete template artifactory
 ```
 
 Persistent Volumes are not deleted using these commands.
+endif::artifactory-on-openshift[]
+
+To configure a set of standard repositories used in the course of the {RefImpl},
+an ansible playbook is provided at https://raw.githubusercontent.com/goern/artifactory-on-openshift/master/playbooks/create-default-repositories.yaml
+It will create the following repositories:
+
+[format="csv",cols="4"]
+[options="header"]
+[frame="topbot",grid="none"]
+|====
+Key, Name, Type, Parent
+testing-generic-local, , local generic, none
+testing-docker-local, , local docker, none
+redhat-ga-remote, Red Hat GA repository, remote maven, none
+jboss-fuse-remote, JBoss Fuse repository, remote maven, none
+repo1-maven-org-remote, Maven Central, remote maven, none
+npm-org-remote, npmjs.org, remote npm, none
+bower-github-remote, Bower, remote bower, none
+docker-io-remote, Docker Hub, remote docker, docker-registry
+access-redhat-com-remote, Red Hat Customer Portal, remote docker, docker-registry
+docker-registry, ACME Docker Registry, virtual docker, none
+|====
+
+To run this ansible playbook, you need to set the environment variable `ARTIFACTORY_API_URL`,
+it must point to Artifactory's API endpoint, in out {RefImpl} it is `http://acme-dev-infra-artifactory.acme.example.com/artifactory`
+
+=== Deploying a Reverse Proxy
+
+ifdef::artifactory-on-openshift[]
+ifdef::artifactory-rev-proxy-on-openshift[]
+As part of the Artifactory OpenShift template a NGINX-based reverse proxy will be defined.
+endif::artifactory-rev-proxy-on-openshift[]
+endif::artifactory-on-openshift[]
+
+ifndef::artifactory-on-openshift[]
+ifdef::artifactory-rev-proxy-on-openshift[]
+Even though Artifactory is deployed on a separate host, for this {RefImpl} the
+reverse proxy will be deployed on {OCP}.
+endif::artifactory-rev-proxy-on-openshift[]
+endif::artifactory-on-openshift[]
+
+ifndef::artifactory-rev-proxy-on-openshift[]
+==== Reverse Proxy - NGINX
+
+Installing NGINX from the Red Hat Software Collections is just a short command sequence:
+
+[source, bash]
+----
+$ yum install rh-nginx18
+$ scl enable rh-nginx18 bash
+$ systemctl enable rh-nginx18-nginx
+----
+
+Next step is to get the reverse proxy configuration for NGINX from Artifactory’s REST API, and start NGINX:
+
+
+[source, bash]
+----
+$ cd /etc/opt/rh/rh-nginx18/nginx/conf.d/
+$ curl -gO http://artifactory.example.com:8081/api/system/configuration/reverseProxy/nginx
+$ systemctl start rh-nginx18-nginx
+----
+
+To check that NGINX is working as expected you could use
+`curl -Lv http://artifactory.example.com/`, you should see that you are
+redirected, and at the end the artifactory web user interface is presented. 
+endif::artifactory-rev-proxy-on-openshift[]
