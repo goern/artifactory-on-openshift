@@ -14,7 +14,6 @@ objects:
   apiVersion: v1
   metadata:
     name: artifactory
-    creationTimestamp: null
   spec:
     tags:
       - name: "${ARTIFACTORY_VERSION}"
