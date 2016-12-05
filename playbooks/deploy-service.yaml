@@ -20,48 +20,79 @@
     failed_when:
       - "'oc v1.3.1' not in command_result.stdout"
       - "'oc v3.3' not in command_result.stdout"
+      - "'oc v1.4.0' not in command_result.stdout"
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: login to OpenShift as administrator
     command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: "make sure to use project {{ project_name }}"
     command: "oc project {{ project_name }}"
     register: project_exists
     ignore_errors: true
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: "create project {{ project_name }}"
     command: "oc new-project {{ project_name }}"
     when: project_exists | failed
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: create template for artifactory
     command: oc create -f ../artifactory.yaml
     register: artifactory_template_rc
     ignore_errors: true
+    tags:
+      - artifactory
 
   - name: replace existing template for artifactory
     command: oc replace -f ../artifactory.yaml
     when: artifactory_template_rc | failed
+    tags:
+      - artifactory
 
   - name: create template for artifactory reverse proxy
     command: oc create -f ../reverse-proxy.yaml
     register: reverse_proxy_template_rc
     ignore_errors: true
+    tags:
+      - reverse-proxy
 
   - name: replace existing template for artifactory reverse proxy
     command: oc replace -f ../reverse-proxy.yaml
     when: reverse_proxy_template_rc | failed
+    tags:
+      - reverse-proxy
 
   - name: create ACME's NGINX builder ImageStream
     command: oc create imagestream s2i-nginx-acme
+    tags:
+      - reverse-proxy
 
   - name: create BuildConfig for ACME's NGINX builder
     command: oc create -f https://raw.githubusercontent.com/goern/s2i-nginx/acme-it-dev/buildConfig.yaml
+    tags:
+      - reverse-proxy
 
   - name: create Artifactory default ConfigMap
     shell: cd .. && oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
+    tags:
+      - artifactory
 
   - name: "create Artifactory {{ artifactory_pro_or_oss }} application"
     command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}-acme --param=ARTIFACTORY_REPOSITORY_NAME=goern-docker-registry.bintray.io"
+    tags:
+      - artifactory
 
   - name: create Artifactory reverse proxy
     command: oc new-app --template=artifactory-rev-proxy --param=DOCKER_REGISTRY_HOSTNAME="docker-registry-artifactory-test.apps.acme.e2e.bos.redhat.com"
+    tags:
+      - artifactory

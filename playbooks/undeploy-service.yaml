@@ -19,15 +19,26 @@
     failed_when:
       - "'oc v1.3.1' not in command_result.stdout"
       - "'oc v3.3' not in command_result.stdout"
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: login to OpenShift as administrator
     command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: make sure to use the right project
     command: "oc project {{ project_name }}"
+    tags:
+      - artifactory
+      - reverse-proxy
 
   - name: scale down PostgreSQL to zero pods
     command: oc scale --replicas=0 dc artifactory-postgresql
+    tags:
+      - artifactory
 
   - name: delete all Artifactory components
     command: oc delete {{ item.type }} {{ item.name }}
@@ -42,3 +53,5 @@
       - { type: template, name: artifactory }
       - { type: configmap, name: artifactory-default-config }
     ignore_errors: true
+    tags:
+      - artifactory

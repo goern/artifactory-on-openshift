@@ -10,8 +10,8 @@ metadata:
     version: 1.3.0-1
   name: artifactory-rev-proxy
 parameters:
-  - name: DOCKER_REGISTRY_HOSTNAME
-    displayName: FQDN of docker registry
+  - name: ARTIFACTORY_REVERSE_PROXY_HOSTNAME
+    displayName: FQDN of Artifactory reverse proxy
     required: true
   - name: S2I_NGINX_IMAGESTREAM
     displayName: S2I NGIX ImageStream name
@@ -41,10 +41,11 @@ parameters:
     description: This is the ImageStream name incl. Tag to be used to run the reverse proxy for Artifactory.
     value: artifactory-rev-proxy
 objects:
+# tag::Service[]
 - kind: Service
   apiVersion: v1
   metadata:
-    name: artifactory-rev-proxy
+    name: artifactory-rev-proxy # <1>
     annotations:
       description: 'NGINX based reverse proxy for Artifactory Docker repositories'
       service.alpha.openshift.io/dependencies: '[{"name":"artifactory","namespace":"","kind":"Service"}]'
@@ -55,7 +56,9 @@ objects:
         port: 80
         targetPort: 8080
     selector:
-      name: artifactory-rev-proxy
+      name: artifactory-rev-proxy # <2>
+# end::Service[]
+# tag::DeploymentConfig[]
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -73,7 +76,7 @@ objects:
             - artifactory-rev-proxy
           from:
             kind: ImageStreamTag
-            name: "${REV_PROXY_IMAGESTREAM}:latest"
+            name: "${REV_PROXY_IMAGESTREAM}:latest" # <1>
       - type: ConfigChange
     replicas: 2
     selector:
@@ -113,46 +116,50 @@ objects:
               limits:
                 cpu: 25m
                 memory: 16Mi
+# end::DeploymentConfig[]
+# tag::Route[]
 - kind: Route
   apiVersion: v1
   metadata:
     name: artifactory-rev-proxy
   spec:
-    host: "${DOCKER_REGISTRY_HOSTNAME}"
+    host: "${ARTIFACTORY_REVERSE_PROXY_HOSTNAME}" # <1>
     to:
       kind: Service
-      name: artifactory-rev-proxy
+      name: artifactory-rev-proxy # <2>
+# end::Route[]
+# tag::BuildConfig[]
 - kind: BuildConfig
   apiVersion: v1
   metadata:
-    name: artifactory-rev-proxy
+    name: artifactory-rev-proxy # <1>
     labels:
       application: artifactory-rev-proxy
   spec:
     triggers:
       - type: ConfigChange
       - type: ImageChange
-      - github:
-          secret: ${GITHUB_WEBHOOK_SECRET}
-        type: GitHub
     source:
       type: Git
       git:
-        uri: "${SOURCE_REPOSITORY_URL}"
-        ref: "${SOURCE_REPOSITORY_REF}"
-      contextDir: "${CONTEXT_DIR}"
+        uri: "${SOURCE_REPOSITORY_URL}" # <2>
+        ref: "${SOURCE_REPOSITORY_REF}" # <3>
+      contextDir: "${CONTEXT_DIR}" # <4>
     strategy:
       type: Source
       sourceStrategy:
          from:
           kind: ImageStreamTag
-          name: "${S2I_NGINX_IMAGESTREAM}:latest"
+          name: "${S2I_NGINX_IMAGESTREAM}:latest" # <5>
     output:
       to:
         kind: ImageStreamTag
-        name: "${REV_PROXY_IMAGESTREAM}:latest"
+        name: "${REV_PROXY_IMAGESTREAM}:latest" # <6>
+# end::BuildConfig[]
+# tag::ImageStream[]
 - kind: ImageStream
   apiVersion: v1
   metadata:
     description: This is a NGINX based reverse proxy for Artifactory's docker repositories
-    name: "${REV_PROXY_IMAGESTREAM}"
+    name: "${REV_PROXY_IMAGESTREAM}" # <1>
+# end::ImageStream[]

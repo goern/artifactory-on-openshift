@@ -1,10 +1,13 @@
+// This file is part of a bigger Asciidoctor Book, so it may not compile or the output will
+// not have the desired content.
+
 == Content Management: JFrog Artifactory
 
 The Content Management (based on a software library) will hold any versioned
 software artifacts (source or binary) that are relevant for production use.
 The Content Governor will use different provided services to accomplish the
 tasks of the content management domain. For the purpose of this Reference
-Implementation JFrog Artifactory PRO (short: Artifactory) will be used.
+Implementation we use JFrog Artifactory PRO (short: Artifactory).
 
 Artifactory will not only be the central point of content ingestion, but will
 also be used as a repository for intermediate binary artifacts, such as
@@ -252,6 +255,7 @@ To configure a set of standard repositories used in the course of the {RefImpl},
 an ansible playbook is provided at https://raw.githubusercontent.com/goern/artifactory-on-openshift/master/playbooks/create-default-repositories.yaml
 It will create the following repositories:
 
+.Artifactory default repositories
 [format="csv",cols="4"]
 [options="header"]
 [frame="topbot",grid="none"]
@@ -272,6 +276,12 @@ docker-registry, ACME Docker Registry, virtual docker, none
 To run this ansible playbook, you need to set the environment variable `ARTIFACTORY_API_URL`,
 it must point to Artifactory's API endpoint, in out {RefImpl} it is `http://acme-dev-infra-artifactory.acme.example.com/artifactory`
 
+The resulting Artifactory repository structure should like similar to the
+following screen shot.
+
+image::images/acme-dev-infra-artifactory.acme.example.com-docker-registry.png[Artifactory Registry Overview]
+
+
 === Deploying a Reverse Proxy
 
 ifdef::artifactory-on-openshift[]
@@ -284,6 +294,150 @@ ifndef::artifactory-on-openshift[]
 ifdef::artifactory-rev-proxy-on-openshift[]
 Even though Artifactory is deployed on a separate host, for this {RefImpl} the
 reverse proxy will be deployed on {OCP}.
+
+To deploy a NGINX-based reverse proxy on {OCP} three steps are required
+
+1. get the NGINX configuration snippet from Artifactory
+2. create a container image with NGINX and this configuration snippet
+3. deploy an application based on the container image from step 2.
+
+As a Source-to-Image build strategy will be used to create the deployable
+container image, you need to initialize a new git repository and make it
+available to your {OCP}.
+
+Details how to create a S2I image can be found as part of the https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i[{OCP} documentation] and online at https://github.com/openshift/source-to-image[OpenShift's github repository].
+
+TIP: You can find an example S2I NGINX repository at https://github.com/goern/s2i-nginx/tree/acme-it-dev
+
+In summary, the NGINX Source-to-Image will copy and html, jpg, css (so called static files), a default NGINX configuration and all configuration snippets to a new container image. This new container image container a Red Hat Software Collections based installation of NGINX and a corresponding container entry point. If this image is deployed to {OCP} it will start NGINX on port 8080 and load all the configuration snippets and starts serving the static files.
+
+We will use this pattern to configure NGINX to act as a reverse proxy for Artifactory.
+
+So the next step will be, to configure the reverse proxy.
+
+==== Obtaining NGINX configuration snippet from Artifactory
+
+After you have created the S2I NGINX repository you need to add the Artifactory configuration snippet. Artifactory provides a restful API to do this, and the configuration snippet could be obtained very simple via `curl -gO http://artifactory.example.com:8081/api/system/configuration/reverseProxy/nginx`. Move this file into `etc/conf.d/artifactory.conf` of the S2I NGINX repository and add and commit it too.
+
+The repository should look simular to this:
+
+[source,bash]
+----
+$ ls -Rtln
+.:
+total 12
+-rw-rw-r--. 1 1000 1000  321 Nov 22 09:59 nginx_rev_proxy.te # <1>
+drwxrwxr-x. 2 1000 1000 4096 Nov 10 09:18 conf.d
+drwxrwxr-x. 2 1000 1000 4096 Nov  7 13:15 html
+
+./conf.d:
+total 4
+-rw-rw-r--. 1 1000 1000 1414 Dec  2 11:23 artifactory.conf # <2>
+
+./html:
+total 4
+-rw-rw-r--. 1 1000 1000 150 Nov  7 13:16 index.html # <3>
+----
+<1> This file is provided for convenience, it is a SE Linux snippet used on a host based installation on NGINX
+<2> This is the Artifactory configuration snippet retrieved from the restful API endpoint
+<3> And this is a simple HTML not really needed to run the reverse proxy
+
+TIP: Again, you can find an example repository at https://github.com/goern/artifactory-on-openshift/tree/master/container-image/reverse-proxy-nginx
+
+==== Create NGINX container image using Source-to-Image
+
+To create a container image out of the git repository assembled in the above step, you need to create a BuildConfig within {OCP} (and a corresponding ImageStream).
+
+We provide `reverse-proxy.yaml` which is a complete declaration of all the {OCP} objects required to build and deploy a reverse proxy for Artifactory. It contains a few parameters, which are explained below. Details explanation of https://access.redhat.com/documentation/en/openshift-container-platform/3.3/single/developer-guide/#defining-a-buildconfig[{OCP} BuildConfig] is available on the {OCP} documentation.
+
+Lets have a look at the BuildConfig first.
+
+.Reverse Proxy BuildConfig
+[source,yaml]
+----
+include::reverse-proxy.yaml[tags=BuildConfig]
+----
+<1> Name of the BuildConfig
+<2> The git repository holding the source
+<3> and a reference (branch or tag) within the repository
+<4> the directory within the repository holding the source
+<5> a builder image, in our case the S2I NGINX container image
+<6> the output ImageStream including the tag
+
+As you can see, the resulting container image is pushed into an ImageStream, therefor this object needs to be created within {OCP}:
+
+.Reverse Proxy ImageStream
+[source,yaml]
+----
+include::reverse-proxy.yaml[tags=ImageStream]
+----
+<1> Name of the ImageStream, without a tag
+
+==== Deploy the NGINX-based reverse proxy application
+
+After a successful build, the ImageStream will have the newest container image containing the Artifactory configuration snippet. To deploy this container image three additional objects are required:
+
+1. a Route, to direct traffic from an internet domain name to the service provided
+2. a Service, to direct traffic from the internet to the pods
+3. a DeploymentConfig, to declare how new Pods get created
+
+All of these three objects are declared within `reverse-proxy.yaml`, detailes are described below.
+
+.Reverse Proxy Route
+[source,yaml]
+----
+include::reverse-proxy.yaml[tags=Route]
+----
+<1> The domain name at which provides the service
+<2> the service name traffic gets directrd to
+
+.Reverse Proxy Service
+[source,yaml]
+----
+include::reverse-proxy.yaml[tags=Service]
+----
+<1> The name of the service
+<2> and a set of labels used to select the pods implementing the service
+
+.Reverse Proxy DeploymentConfig
+[source,yaml]
+----
+include::reverse-proxy.yaml[tags=DeploymentConfig]
+----
+<1> Name of the container image created by the BuildConfig
+
+==== Using Ansible to deploy the NGINX-based reverse proxy application
+
+All these objects could be created from an {OCP} template, and this could be automated with an Ansible playbook. Such a playbook is provided as https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/deploy-service.yaml[`playbooks/deploy-service.yaml`]. All the tasks have been tagged, so you can easily select either to deploy Artifactory itself, or just the NGINX-based reverse proxy.
+
+To deploy only the reverse proxy make sure that the following environment variables are set:
+
+.Ansible environment variables
+[options="header"]
+[frame="topbot",grid="none"]
+|====
+| Environment Variable | Comment
+| OCP_URL | URL of the {OCP} master API endpoint
+| OCP_USER | {OCP} username with role Platform Operator
+| OCP_PASSWORD | Passoword of the user
+|====
+
+Use the Ansible playbook to deploy the NGINX-based reverse proxy for Artifactory by issuing the command
+
+[source,bash]
+----
+$ ansible-playbook playbooks/deploy-service.yaml  --tags reverse-proxy
+PLAY [Deploy Artifactory, see https://github.com/goern/artifactory-on-openshift] ***
+
+ [... output delete ...]
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=8    changed=6    unreachable=0    failed=0
+----
+
+Beside the fact that you may see a few warining or errors, none of the plays/tasks should fail. To validate that all objects required have been created you can use `oc get all --selector='application=s2i-nginx-acme'`.
+
+
 endif::artifactory-rev-proxy-on-openshift[]
 endif::artifactory-on-openshift[]
 
@@ -311,5 +465,5 @@ $ systemctl start rh-nginx18-nginx
 
 To check that NGINX is working as expected you could use
 `curl -Lv http://artifactory.example.com/`, you should see that you are
-redirected, and at the end the artifactory web user interface is presented. 
+redirected, and at the end the artifactory web user interface is presented.
 endif::artifactory-rev-proxy-on-openshift[]
