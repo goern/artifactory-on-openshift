@@ -59,7 +59,7 @@ Governor would either execute manual task via the Artifactory web user interface
 or automated tasks via the REST API. Both interfaces offer the same functions.
 
 ==== Pulling Content for Builds (2)
-The second interaction pattern is related to OCP Builds and ImageStreams. They
+The second interaction pattern is related to {OCP} Builds and ImageStreams. They
 interface with Artifactory via HTTP/HTTPS to access Docker, Maven, NPM or Bower
 repositories. In the case of Docker repository access a reverse proxy (3) is
 used to translate docker registry interactions to Artifactory repository
