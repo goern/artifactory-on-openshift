@@ -3,13 +3,17 @@
   vars:
     artifactory_api: "{{ lookup('env','ARTIFACTORY_API_URL') }}"
     local_repositories:
-      - key: testing-generic-local
+      - key: generic-testing-local
         rclass: local
         description: This is a local generic repository created via REST API, its for testing purpose only.
         packageType: generic
-      - key: testing-docker-local
+      - key: docker-testing-local
         rclass: local
         description: This is a local Docker repository created via REST API, its for testing purpose only.
+        packageType: docker
+      - key: docker-release-local
+        rclass: local
+        description: Local repository for in-house container images
         packageType: docker
     remote_repositories:
       - key: redhat-ga-remote
@@ -58,6 +62,7 @@
         repositories:
           - docker-io-remote
           - access-redhat-com-remote
+          - docker-release-local
 
   tasks:
   - name: create local repositories

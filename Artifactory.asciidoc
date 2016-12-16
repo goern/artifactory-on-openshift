@@ -261,8 +261,9 @@ It will create the following repositories:
 [frame="topbot",grid="none"]
 |====
 Key, Name, Type, Parent
-testing-generic-local, , local generic, none
-testing-docker-local, , local docker, none
+generic-testing-local, , local generic, none
+docker-testing-local, , local docker, none
+docker-release-local, Local repository for container images, local docker, none
 redhat-ga-remote, Red Hat GA repository, remote maven, none
 jboss-fuse-remote, JBoss Fuse repository, remote maven, none
 repo1-maven-org-remote, Maven Central, remote maven, none
@@ -279,6 +280,7 @@ it must point to Artifactory's API endpoint, in out {RefImpl} it is `http://acme
 The resulting Artifactory repository structure should like similar to the
 following screen shot.
 
+.Artifactory Registry Overview
 image::images/acme-dev-infra-artifactory.acme.example.com-docker-registry.png[Artifactory Registry Overview]
 
 
@@ -467,3 +469,64 @@ To check that NGINX is working as expected you could use
 `curl -Lv http://artifactory.example.com/`, you should see that you are
 redirected, and at the end the artifactory web user interface is presented.
 endif::artifactory-rev-proxy-on-openshift[]
+
+=== Testing the deployment
+
+To test the Content Management deployment two steps are recommended:
+
+a. log in to the docker registry
+b. push a container image created locally
+
+==== Log in to ACME Corp's docker registry
+
+To log in to ACME Corp's docker registry you can either use the command line interface, or the https://www.jfrog.com/confluence/display/RTF/Docker+Registry#DockerRegistry-SetMeUp[web user interface]. The web user interface gives a step by step guidance how to log in. In addition to that a command line log in is shown:
+
+[source, bash]
+----
+$ docker login docker-registry.artifactory.example.com # <1>
+Username (admin): admin
+Password: ****
+Login Succeeded
+----
+<1> hostname of the reverse proxy
+
+This command will add a section to `~/.docker/config.json`:
+
+[source, json]
+---
+{
+	"auths": {
+		"docker-registry.artifactory.example.com": {
+			"auth": "YWRtxxx6cGFzc3dvcmQ=",
+			"email": "admin@example.com"
+		}
+	}
+}
+---
+
+==== Pushing a container image
+
+After successful log in, you can push a container image to ACME Corp's docker registry.
+
+[source, bash]
+----
+$ docker tag 2266xxx0f568 docker-registry.artifactory.example.com/mongo-centos7:latest # <1>
+$ docker push docker-registry.artifactory.example.com/mongo-centos7:latest # <2>
+The push refers to a repository [docker-registry.artifactory.example.com/mongo-centos7]
+7598xxx6ae9b: Pushed
+b71axxx60164: Pushed
+latest: digest: sha256:a4c5xxxfcdcb496bee9e19bdd29acd7881266b2e0d8781b20e923b6b6f4320f2 size: 741 # <3>
+----
+<1> tag a local container image with registry, name, tag
+<2> push it to ACME Corp docker registry (the reverse proxy)
+<3> the message that pushing finished successful
+
+After `docker push` has finished, you should see that a new artifact is present within the `docker-release-local` repository. This proves:
+
+1. the reverse proxy is working and connecting to its upstream server
+2. you can authenticate with the ACME Corp's docker registry
+3. the reverse proxy uploads files to its upstream server
+4. Artifactory (the upstream server) stores all artifacts of the container image
+
+.New container image
+image::images/artifactory-after-docker-push.png[New container image]
