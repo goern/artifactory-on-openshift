@@ -2,7 +2,7 @@ FROM openshift/base-centos7
 
 MAINTAINER Christoph Görn <goern@redhat.com>
 
-ENV ARTIFACTORY_VERSION="4.14.1"
+ENV ARTIFACTORY_VERSION="5.0.1"
 ENV ARTIFACTORY_HOME="/var/opt/jfrog/artifactory"
 
 # the license lable makes a statement about this Dockerfile not the packages software
@@ -14,7 +14,7 @@ LABEL name="JFrog Artifactory Pro" \
       summary="The world's most advanced repository manager. Artifactory offers powerful enterprise feature and fine-grained permission control behind a sleek and easy-to-use UI." \
       io.openshift.expose-services="8081,artifactory" \
       io.openshift.tags="artifactory" \
-      version="4.14.1"
+      version="5.0.1"
 
 WORKDIR /opt/jfrog/artifactory
 
@@ -49,6 +49,6 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 3
-LABEL build-date="2016-11-17" \
-      release="3"
+ENV BUILD_VERSION 1
+LABEL build-date="2017-02-15" \
+      release="1"

@@ -18,9 +18,10 @@
     failed_when:
       - "'oc v1.3.1' not in command_result.stdout"
       - "'oc v3.3' not in command_result.stdout"
+      - "'oc v1.4.0' not in command_result.stdout"
 
   - name: Login in OpenShift as administrator
-    shell: "oc login --insecure-skip-tls-verify=true -u {{ admin_username }} -p {{ admin_password }} {{ openshift_master_url }}"
+    shell: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
 
   - name: get URL of Artifactory website
     command: oc get route artifactory -o template --template=\{\{.spec.host\}\}

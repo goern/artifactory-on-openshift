@@ -1,4 +1,4 @@
-FROM goern-docker-registry.bintray.io/goern/artifactory-pro:4.14.1-3
+FROM goern-docker-registry.bintray.io/goern/artifactory-pro:5.0.1-1
 
 MAINTAINER Christoph Görn <goern@redhat.com>
 
@@ -11,4 +11,4 @@ RUN keytool -importcert -keystore /etc/pki/ca-trust/extracted/javacacerts -store
 
 USER 1013
 
-ENV BUILD_VERSION 3
+ENV BUILD_VERSION 1
