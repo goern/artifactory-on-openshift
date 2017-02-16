@@ -251,6 +251,8 @@ oc delete template artifactory
 Persistent Volumes are not deleted using these commands.
 endif::artifactory-on-openshift[]
 
+==== Creating Repositories
+
 To configure a set of standard repositories used in the course of the {RefImpl},
 an ansible playbook is provided at https://raw.githubusercontent.com/goern/artifactory-on-openshift/master/playbooks/create-default-repositories.yaml
 It will create the following repositories:

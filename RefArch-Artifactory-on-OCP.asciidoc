@@ -1,0 +1,97 @@
+// These are shortcuts we could use all over the document/files
+:paas: Platform-as-a-Service
+:cdn: Red Hat Content Delivery Network
+:eap: Red Hat JBoss Enterprise Application Platform 6
+:osp7: Red Hat Enterprise Linux OpenStack Platform 7
+:ose3: OpenShift Enterprise 3
+:OCP: OpenShift Container Platform 3.4
+:MS-AD: Microsoft Active Directory
+:rhel7: Red Hat Enterprise Linux 7 Server
+:sat6: Red Hat Satellite 6
+:vcenter6: VMware vCenter 6
+:ose3ag: OpenShift Enterprise 3 by Red Hat architecture guide: Plan, deploy, and operate an open source Platform-as-a-Service (PaaS)
+:VCS: Version Control System
+:DNS: Domain Name System
+:IAM: Identity and Access Management
+:oos: out of scope for this Reference Implementation
+:RefArch: Reference Architecture
+:RefImpl: Reference Implementation
+:s2i: Source-to-Image
+
+= JFrog Artifactory on {OCP}
+Christoph Görn <goern@redhat.com>
+0.1.0, 2017-Feb-16
+
+:doctype: book
+:title-logo-image: image:images/template/rh-ra-banner.png[scaledwidth=70%,align=center]
+:compat-mode!:
+:numbered:
+:chapter-label:
+:specialnumbered!:
+:experimental:
+:back-cover-image: image:images/bckcover.pdf[]
+:listing-caption: Listing
+:toc:
+:icons: font
+:toclevels: 3
+
+ifdef::backend-pdf[]
+:pagenums:
+:pygments-style: bw
+:source-highlighter: pygments
+endif::[]
+
+// This could be used to configure the shared-doc content
+:glossary-openshift: true
+:ose3-sat61-refimpl: false
+:detailed-roles!: true
+
+// This is for document only
+:artifactory-on-openshift: true
+:artifactory-rev-proxy-on-openshift: true
+
+[asbstract]
+//empty on purpose so that legal can be on separate page and not conflict with toc
+
+<<<
+
+100 East Davie Street +
+Raleigh NC 27601 USA +
+Phone: +1 919 754 3700 +
+Phone: 888 733 4281 +
+PO Box 13588 +
+Research Triangle Park NC 27709 USA +
+
+© 2016 by Red Hat, Inc. This material may be distributed only subject to the terms and conditions set forth in the Open Publication License, V1.0 or later (the latest version is presently available at http://www.opencontent.org/openpub/).
+
+The information contained herein is subject to change without notice. Red Hat, Inc. shall not be liable for technical or editorial errors or omissions contained herein.
+
+Distribution of modified versions of this document is prohibited without the explicit permission of Red Hat Inc.
+
+Distribution of this work or derivative of this work in any standard (paper) book form for commercial purposes is prohibited unless prior permission is obtained from Red Hat Inc.
+
+The GPG fingerprint of the security@redhat.com key is:
+CA 20 86 86 2B D6 9D FC 65 F6 EC C4 21 91 80 CD DB 42 A6 0E
+
+Send feedback to refarch-feedback@redhat.com
+
+<<<
+
+include::shared-doc/comments-feedback.adoc[]
+
+
+include::ExecutiveSummary.asciidoc[]
+
+include::Introduction.asciidoc[]
+
+include::Prerequisites.asciidoc[]
+
+include::Artifactory.asciidoc[]
+
+include::Appendices.asciidoc[]
+
+include::shared-doc/bibliography.adoc[]
+
+include::shared-doc/trademarks.adoc[]
+
+// vim: set syntax=asciidoc:

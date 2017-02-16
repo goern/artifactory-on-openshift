@@ -1,0 +1,4 @@
+Have OCP 3.3++ up and running
+Have a project created and some PV
+DNS setup
+git clone this Directory
