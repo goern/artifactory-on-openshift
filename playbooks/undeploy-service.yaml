@@ -40,11 +40,14 @@
     command: oc scale --replicas=0 dc artifactory-postgresql
     tags:
       - artifactory
+    ignore_errors: true
 
   - name: delete all Artifactory components
     command: oc delete {{ item.type }} {{ item.name }}
     with_items:
+      - { type: buildconfig, name: s2i-nginx-acme }
       - { type: imagestream, name: artifactory }
+      - { type: imagestream, name: s2i-nginx-acme }
       - { type: petset, name: artifactory }
       - { type: pod, name: artifactory-0 }
       - { type: dc, name: artifactory-postgresql }
@@ -52,7 +55,20 @@
       - { type: service, name: artifactory-postgresql }
       - { type: route, name: artifactory }
       - { type: template, name: artifactory }
+      - { type: template, name: artifactory-rev-proxy }
       - { type: configmap, name: artifactory-default-config }
+    ignore_errors: true
+    tags:
+      - artifactory
+
+  - name: delete all Artifactory related PersistentVolumeClaims
+    command: oc delete pvc {{ item }}
+    with_items:
+      - artifactory-backup-artifactory-0
+      - artifactory-data-artifactory-0
+      - artifactory-logs-artifactory-0
+      - artifactory-var-artifactory-0
+      - artifactory-postgresql
     ignore_errors: true
     tags:
       - artifactory
