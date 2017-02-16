@@ -3,7 +3,7 @@
 
 == Content Management: JFrog Artifactory
 
-The Content Management (based on a software library) will hold any versioned
+As a central service of each company, Content Management (based on a software library) will hold any versioned
 software artifacts (source or binary) that are relevant for production use.
 The Content Governor will use different provided services to accomplish the
 tasks of the content management domain. For the purpose of this Reference
@@ -13,6 +13,7 @@ Artifactory will not only be the central point of content ingestion, but will
 also be used as a repository for intermediate binary artifacts, such as
 container images or JAR files.
 
+From this central content repository container images will be pulled into the production environment.
 
 === Artifactory Components
 
@@ -532,3 +533,9 @@ After `docker push` has finished, you should see that a new artifact is present 
 
 .New container image
 image::images/artifactory-after-docker-push.png[New container image]
+
+== Using Artifactory with Source-to-Image builds
+
+== Configure an OpenShift buildpipeline to use Artifactory
+
+== Pushing build artifacts to Artifactory

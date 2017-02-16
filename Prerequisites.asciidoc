@@ -1,4 +1,47 @@
-Have OCP 3.3++ up and running
-Have a project created and some PV
-DNS setup
-git clone this Directory
+== Prerequisites
+
+This Reference Architecture requires a few things to be set up properly.
+
+=== {ocp} 3.4 or above
+
+All commands, playbooks or configurations require {ocp} 3.4 or above. Please provide a correctly deployed environment. Please direct special attention to DNS setup.
+
+To set up such an environment you can leverage <<ocp-on-vmware>> to learn how to deploy to an on premise VMware infrastructure or use <<ocp-on-aws>> to learn how to deploy to the Amazon public cloud.
+
+=== local client tools
+
+In order to run the Ansible playbooks you need locally installed {ocp} command line tools, git and ansible.
+
+.required local software
+[options="header"]
+[frame="topbot",grid="none"]
+|====
+|Software | RPM | Repository
+| git | git-1.8.3.1-6.el7_2.1.x86_64 | rhel-7-server-rpms
+| ansible | ansible-2.2.0.0-1.el7.noarch | rhel-7-server-ose-3.4-rpms
+| oc command | atomic-openshift-clients-3.4.1.5-1.git.0.690b5d4.el7.x86_64 | rhel-7-server-ose-3.4-rpms
+|====
+
+WARNING: Due to a bug existing at the time of writing this {RefImpl} it is required to use ansible 2.2.0.0, not 2.2.1.0!
+
+=== An OpenShift project
+
+Please create a project to deploy Artifactory to. The user you are using must have all the permissions to create and OpenShift configuration item within this project. The user/project must have access to a certain number of PersistenVolumes:
+
+.required PersistenVolumes
+[options="header"]
+[frame="topbot",grid="none"]
+|====
+| PersistentVolume | min. size | used for | used by
+| vol0001 | 1Gi | artifactory-backup-artifactory-0 | Artifactory pod
+| vol0002 | 1Gi | artifactory-data-artifactory-0 | Artifactory pod
+| vol0003 | 1Gi | artifactory-logs-artifactory-0 | Artifactory pod
+| vol0004 | 1Gi | artifactory-var-artifactory-0 | Artifactory pod
+| vol0005 | 1Gi | artifactory-postgresql | PostgreSQL
+|====
+
+Throughout the course of this {RefImpl} we use the project `artifactory-test`.
+
+=== Clone this {RefImpl}
+
+To use the Ansible playbooks and {ocp} configurations provided by this {RefImpl} you need to clone https://github.com/goern/artifactory-on-openshift to your local workstation.
