@@ -88,7 +88,7 @@
       - artifactory
 
   - name: "create Artifactory {{ artifactory_pro_or_oss }} application"
-    command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}-acme --param=ARTIFACTORY_REPOSITORY_NAME=goern-docker-registry.bintray.io"
+    command: "oc new-app --template=artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }}-acme --param=ARTIFACTORY_REPOSITORY_NAME=goern-docker-registry.bintray.io/goern"
     tags:
       - artifactory
 

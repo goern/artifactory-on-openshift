@@ -10,7 +10,7 @@
     openshift_master_url: "{{ lookup('env','OCP_URL') }}"
     username: "{{ lookup('env','OCP_USER') }}"
     password: "{{ lookup('env','OCP_PASSWORD') }}"
-    project_name: acme-dev-infra
+    project_name: artifactory-test
 
   tasks:
   - name: verify oc version
