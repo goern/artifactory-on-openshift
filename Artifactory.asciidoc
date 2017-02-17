@@ -423,8 +423,7 @@ To deploy only the reverse proxy make sure that the following environment variab
 |====
 | Environment Variable | Comment
 | OCP_URL | URL of the {OCP} master API endpoint
-| OCP_USER | {OCP} username with role Platform Operator
-| OCP_PASSWORD | Passoword of the user
+| OCP_TOKEN | {OCP} token of user with role Platform Operator
 |====
 
 Use the Ansible playbook to deploy the NGINX-based reverse proxy for Artifactory by issuing the command

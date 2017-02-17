@@ -8,8 +8,7 @@
   hosts: localhost
   vars: # FIXME DRY
     openshift_master_url: "{{ lookup('env','OCP_URL') }}"
-    username: "{{ lookup('env','OCP_USER') }}"
-    password: "{{ lookup('env','OCP_PASSWORD') }}"
+    token: "{{ lookup('env','OCP_TOKEN') }}"
     project_name: artifactory-test
     artifactory_pro_or_oss: pro
 
@@ -26,7 +25,7 @@
       - reverse-proxy
 
   - name: login to OpenShift as administrator
-    command: "oc login --insecure-skip-tls-verify=true -u {{ username }} -p {{ password }} {{ openshift_master_url }}"
+    command: "oc login --insecure-skip-tls-verify=true --token {{ token }} {{ openshift_master_url }}"
     tags:
       - artifactory
       - reverse-proxy

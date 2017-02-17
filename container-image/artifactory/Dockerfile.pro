@@ -49,6 +49,6 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 1
+ENV BUILD_VERSION 4
 LABEL build-date="2017-02-15" \
-      release="1"
+      release="4"
