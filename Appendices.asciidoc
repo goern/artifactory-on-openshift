@@ -1,0 +1,22 @@
+[appendix]
+
+== Artifactory NGINX configuration snippet
+
+[source]
+----
+include::tmp-artifactory-conf[]
+----
+
+== NodeJS S2I with Artifactory integrated
+
+=== Dockerfile
+[source]
+----
+include::container-image/s2i-node-acme/Dockerfile[]
+----
+
+=== S2I environment file
+[source]
+----
+include::container-image/s2i-node-acme/s2i/environment[]
+----

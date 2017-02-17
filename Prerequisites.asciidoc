@@ -2,9 +2,9 @@
 
 This Reference Architecture requires a few things to be set up properly.
 
-=== {ocp} 3.4 or above
+=== {ocp}
 
-All commands, playbooks or configurations require {ocp} 3.4 or above. Please provide a correctly deployed environment. Please direct special attention to DNS setup.
+All commands, playbooks or configurations require OpenShift Container Platform 3.4 or above. Please provide a correctly deployed environment. Please direct special attention to DNS setup.
 
 To set up such an environment you can leverage <<ocp-on-vmware>> to learn how to deploy to an on premise VMware infrastructure or use <<ocp-on-aws>> to learn how to deploy to the Amazon public cloud.
 

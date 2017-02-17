@@ -75,7 +75,7 @@ and on a persistent storage volume, provided by a NFS server (5).
 ==== Proxying Content from remote Repositories (6)
 All so called remote repositories implement a caching proxy for remote/upstream
 repositories. Content within these repositories is cached for a certain amount
-of time on storage. This is especially useful to speed up OCP Builds, as
+of time on storage. This is especially useful to speed up {OCP} Builds, as
 required content must not be downloaded from the internet but from Artifactory’s
 caching repository.
 
@@ -162,7 +162,8 @@ TIP: Don’t forget to install your PRO license key via the web user interface.
 endif::artifactory-on-openshift[]
 
 ifdef::artifactory-on-openshift[]
-This Chapter needs to be written...
+
+The following chapters will guide you thru the steps to build container images for Artifactory, create an application template for Artifactory on OpenShift and deploy all the components to OpenShift by using this template.
 
 ===== Building the Artifactory container image
 
@@ -291,7 +292,7 @@ image::images/acme-dev-infra-artifactory.acme.example.com-docker-registry.png[Ar
 
 ifdef::artifactory-on-openshift[]
 ifdef::artifactory-rev-proxy-on-openshift[]
-As part of the Artifactory OpenShift template a NGINX-based reverse proxy will be defined.
+As part of the Artifactory OpenShift template a NGINX-based reverse proxy will be deployed.
 endif::artifactory-rev-proxy-on-openshift[]
 endif::artifactory-on-openshift[]
 
@@ -495,7 +496,7 @@ Login Succeeded
 This command will add a section to `~/.docker/config.json`:
 
 [source, json]
----
+----
 {
 	"auths": {
 		"docker-registry.artifactory.example.com": {
@@ -504,7 +505,7 @@ This command will add a section to `~/.docker/config.json`:
 		}
 	}
 }
----
+----
 
 ==== Pushing a container image
 
@@ -533,8 +534,85 @@ After `docker push` has finished, you should see that a new artifact is present 
 .New container image
 image::images/artifactory-after-docker-push.png[New container image]
 
-== Using Artifactory with Source-to-Image builds
+
+== Using Artifactory with Source-to-Image (S2I) builds
+
+Source-to-Image container images provided by Red Hat to be used with a BuildConfig are enabled to set proxies for Maven or NPM. This way Artifactory could be used to provide all the artifacts required during build time.
+
+Setting the required environment variables could either be archieved via the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#buildconfig-environment[BuildConfig] or by providing a custom layer ontop to Red Hat provided S2I container image. This layer will set the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#environment-files[environment variables file].
+
+This {RefImpl} provides an example within the `container-image/s2i-nginx-acme/` directory. The generated image could be used with any BuildConfig for a NodeJS project. The same could be accomplished for Java/Maven based builds by setting `MAVEN_MIRROR_URL` within the BuildConfig.
+
+TIP: For a quick glimpse on this idea have a look at Appendix <<NodeJS S2I with Artifactory integrated>>.
+
+Both alternatives are feasible to utilize Artifactory as an artifact cache during build time. Using the S2I approach will give Ops a little more control over Dev, as the environment variables is set with a same default value, so that even glibly developers will use Artifactory to seed up builds and/or only consume content under control and provided by Artifactory.
+
 
 == Configure an OpenShift buildpipeline to use Artifactory
+
+Beside S2I builds the OpenShift BuildPipeline is an additional method to build container images. An introduction to OpenShild Pipelines is available as an https://blog.openshift.com/openshift-3-3-pipelines-deep-dive/[OpenShift blog entry].
+
+=== Required Jenkins plugins
+
+To use Artifactory within a Jenkins pipeline you need to add the Artifactory Jenkins plugin to the container images from which Jenkins applications are created. How to add a plugin to the Jenkins container images is described by https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-as-s2i-builder[Using Jenkins as a Source-To-Image builder], please add https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+Plugin[Artifactory Plugin] using this method.
+
+In addition to the plugin itself, a default configuration could be added to the ACME Corp Jenkins container image.
+
+How to https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-creating-jenkins-service-from-template[Creating a Jenkins Service from a Template] is described by the OpenShift documentation, please make sure that the Jenkins application is created from the ACME Corp Jenkins container image containing the Artifactory plugin.
+
+=== Jenkinsfile example
+
+After Jenkins and all the required plugins are set up and ready to use, a BuildConfig with JenkinsPipeline strategy could be created.
+
+[source]
+----
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  annotations:
+    pipeline.alpha.openshift.io/uses: '[{"name": "eap-app", "namespace": "", "kind": "DeploymentConfig"}]'
+  name: eap-app-pipeline
+spec:
+  strategy:
+    type: JenkinsPipeline
+    jenkinsPipelineStrategy: {}
+  source:
+    contextDir: kitchensink
+    git:
+      ref: acme-demo
+      uri: https://github.com/goern/jboss-eap-quickstarts.git
+    type: Git
+  output:
+    to:
+      kind: ImageStreamTag
+      name: eap-app:latest
+----
+
+.Jenkinsfile snippet
+[source]
+----
+node('maven') { // this will use maven jenkins slave containers...
+  def artifactory = Artifactory.server('artifactory.example.com')
+  def artifactoryMaven = Artifactory.newMavenBuild()
+  def buildInfo = Artifactory.newBuildInfo()
+
+  stage('SCM: checkout') {
+    git url: 'https://github.com/goern/jboss-eap-quickstarts.git', branch: 'acme-demo'
+  }
+
+  stage('Artifactory: configuration') {
+    artifactoryMaven.tool = "Maven3" // Tool name from Jenkins configuration
+    artifactoryMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: artifactory
+    artifactoryMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: artifactory
+
+    buildInfo.env.capture = true
+    buildInfo.retention maxBuilds: 10, maxDays: 7, deleteBuildArtifacts: true
+  }
+
+  stage('Maven: build') {
+    artifactoryMaven.run pom: 'kitchensink/pom.xml', goals: 'clean install', buildInfo: buildInfo
+  }
+}
+----
 
 == Pushing build artifacts to Artifactory

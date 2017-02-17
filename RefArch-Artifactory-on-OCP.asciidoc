@@ -79,7 +79,6 @@ Send feedback to refarch-feedback@redhat.com
 
 include::shared-doc/comments-feedback.adoc[]
 
-
 include::ExecutiveSummary.asciidoc[]
 
 include::Introduction.asciidoc[]
@@ -87,6 +86,8 @@ include::Introduction.asciidoc[]
 include::Prerequisites.asciidoc[]
 
 include::Artifactory.asciidoc[]
+
+include::Conclusions.asciidoc[]
 
 include::Appendices.asciidoc[]
 
