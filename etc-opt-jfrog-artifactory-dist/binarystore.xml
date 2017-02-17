@@ -1,0 +1,6 @@
+<config version="v1">
+    <chain template="file-system"/>
+    <provider type="file-system" id="file-system">
+        <binariesDir>/var/opt/jfrog/artifactory/data/filestore</binariesDir>
+    </provider>
+</config>
