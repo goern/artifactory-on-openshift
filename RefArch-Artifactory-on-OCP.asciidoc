@@ -18,9 +18,18 @@
 :RefImpl: Reference Implementation
 :s2i: Source-to-Image
 
+// This could be used to configure the shared-doc content
+:glossary-openshift: true
+:ose3-sat61-refimpl: false
+:detailed-roles!: true
+
+// This is for document only
+:artifactory-on-openshift: true
+:artifactory-rev-proxy-on-openshift: true
+
 = JFrog Artifactory on {OCP}
 Christoph Görn <goern@redhat.com>
-0.1.0, 2017-Feb-16
+v0.1.0, 2017-Feb-16
 
 :doctype: book
 :title-logo-image: image:images/template/rh-ra-banner.png[scaledwidth=70%,align=center]
@@ -40,15 +49,6 @@ ifdef::backend-pdf[]
 :pygments-style: bw
 :source-highlighter: pygments
 endif::[]
-
-// This could be used to configure the shared-doc content
-:glossary-openshift: true
-:ose3-sat61-refimpl: false
-:detailed-roles!: true
-
-// This is for document only
-:artifactory-on-openshift: true
-:artifactory-rev-proxy-on-openshift: true
 
 [asbstract]
 //empty on purpose so that legal can be on separate page and not conflict with toc
@@ -88,6 +88,8 @@ include::Prerequisites.asciidoc[]
 include::Artifactory.asciidoc[]
 
 include::Conclusions.asciidoc[]
+
+include::Acknowledgements.asciidoc[]
 
 include::Appendices.asciidoc[]
 

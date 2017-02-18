@@ -29,11 +29,7 @@ playbook.
 
 ==== Storage and Database
 
-Storage for artifacts and the PostgreSQL database is provided via NFS-backed
-PersistentVolumes ({OCP}) or the local filesystems of the host running
-Artifactory. The PostgreSQL database is used exclusively for Artifactory.
-PersistentVolumes are provisioned from one (SPOF-FAIL, but {oos})
-NFS server and are not backed up (FAIL-TODO, but {oos}).
+Storage for artifacts and the PostgreSQL database is provided via NFS-backed PersistentVolumes ({OCP}) or the local filesystems of the host running Artifactory. The PostgreSQL database is used exclusively for Artifactory. PersistentVolumes are provisioned from one NFS server and are not backed up. In a production environment this would be considered a single point of failure (SPOF) and must be avoided, it is {oos}.
 
 ==== Reverse Proxy
 
@@ -550,19 +546,54 @@ Both alternatives are feasible to utilize Artifactory as an artifact cache durin
 
 == Configure an OpenShift buildpipeline to use Artifactory
 
-Beside S2I builds the OpenShift BuildPipeline is an additional method to build container images. An introduction to OpenShild Pipelines is available as an https://blog.openshift.com/openshift-3-3-pipelines-deep-dive/[OpenShift blog entry].
+Beside S2I builds the OpenShift Build Pipeline is an additional method to build container images. An introduction to OpenShift Pipelines is available as an https://blog.openshift.com/openshift-3-3-pipelines-deep-dive/[OpenShift blog entry].
 
 === Required Jenkins plugins
 
 To use Artifactory within a Jenkins pipeline you need to add the Artifactory Jenkins plugin to the container images from which Jenkins applications are created. How to add a plugin to the Jenkins container images is described by https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-as-s2i-builder[Using Jenkins as a Source-To-Image builder], please add https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+Plugin[Artifactory Plugin] using this method.
 
-In addition to the plugin itself, a default configuration could be added to the ACME Corp Jenkins container image.
+In addition to the plugin itself, a default configuration could be added to the ACME Corp Jenkins container image. For the ACME Corp this configuration look like the following example.
+
+.Artifactory Jenkins plugin configuration example
+[source]
+----
+<?xml version='1.0' encoding='UTF-8'?>
+<org.jfrog.hudson.ArtifactoryBuilder_-DescriptorImpl plugin="artifactory@2.8.1">
+  <useCredentialsPlugin>false</useCredentialsPlugin>
+  <artifactoryServers>
+    <org.jfrog.hudson.ArtifactoryServer>
+      <url>http://artifactory.example.com/artifactory</url> <1>
+      <id>acme-dev-infra-artifactory</id>
+      <timeout>300</timeout>
+      <bypassProxy>false</bypassProxy>
+      <deployerCredentialsConfig>
+        <credentials> <2>
+          <username>admin</username>
+          <password>password</password>
+        </credentials>
+        <credentialsId></credentialsId>
+        <overridingCredentials>false</overridingCredentials>
+        <ignoreCredentialPluginDisabled>false</ignoreCredentialPluginDisabled>
+      </deployerCredentialsConfig>
+    </org.jfrog.hudson.ArtifactoryServer>
+  </artifactoryServers>
+  <pushToBintrayEnabled>false</pushToBintrayEnabled>
+  <buildInfoProxyEnabled>false</buildInfoProxyEnabled>
+  <buildInfoProxyPort>0</buildInfoProxyPort>
+  <buildInfoProxyCertPublic>/var/lib/jenkins/secrets/jfrog/certs/jfrog.proxy.crt</buildInfoProxyCertPublic>
+  <buildInfoProxyCertPrivate>/var/lib/jenkins/secrets/jfrog/certs/jfrog.proxy.key</buildInfoProxyCertPrivate>
+</org.jfrog.hudson.ArtifactoryBuilder_-DescriptorImpl>
+----
+<1> This is the URL of Artifactory deployed on {ocp}
+<2> username and password need to be provided to upload artifacts
 
 How to https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-creating-jenkins-service-from-template[Creating a Jenkins Service from a Template] is described by the OpenShift documentation, please make sure that the Jenkins application is created from the ACME Corp Jenkins container image containing the Artifactory plugin.
 
+TIP: A fully working example of an Jenkins container image with Artifactory plugin and some other additional plugins is available online at https://github.com/goern/jenkins-acme
+
 === Jenkinsfile example
 
-After Jenkins and all the required plugins are set up and ready to use, a BuildConfig with JenkinsPipeline strategy could be created.
+After Jenkins and all the required plugins are set up and ready to use, a BuildConfig with JenkinsPipeline strategy could be created. This BuildConfig will utilize an OpenShift service by the name of 'jenkins' to execute the pipeline defined by the either inlined Jenkinsfile or by a Jenkinsfile provided with the source code you are building from. If this service does not exist, {ocp} will deploy it from a template, more details can be found at https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-creating-jenkins-service-from-template[Creating a Jenkins Service from a Template].
 
 [source]
 ----
@@ -575,32 +606,36 @@ metadata:
 spec:
   strategy:
     type: JenkinsPipeline
-    jenkinsPipelineStrategy: {}
+    jenkinsPipelineStrategy: {} <4>
   source:
-    contextDir: kitchensink
+    contextDir: kitchensink <2>
     git:
-      ref: acme-demo
-      uri: https://github.com/goern/jboss-eap-quickstarts.git
+      ref: acme-demo <3>
+      uri: https://github.com/goern/jboss-eap-quickstarts.git <1>
     type: Git
   output:
     to:
       kind: ImageStreamTag
       name: eap-app:latest
 ----
+<1> git repository location of the source code
+<2> directory within the repository that holds the source code
+<3> git branch to be used
+<4> empty jenkinsPipelineStrategy will make use of an Jenkinsfile provided with source code
 
-.Jenkinsfile snippet
+Details regarding the BuildConfig can be found at https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/developer-guide/#pipeline-strategy-options[Pipeline Strategy Options] chapter of the {ocp} documentation.
+
+With the example above a Jenkinsfile provided with the source code is used, rather than an inlined Jenkinsfile definition. This Jenkins pipleline could look like the following snippet.
+
+.Jenkinsfile snippet - configure and build
 [source]
 ----
 node('maven') { // this will use maven jenkins slave containers...
-  def artifactory = Artifactory.server('artifactory.example.com')
-  def artifactoryMaven = Artifactory.newMavenBuild()
+  def artifactory = Artifactory.server('artifactory.example.com') // <1>
+  def artifactoryMaven = Artifactory.newMavenBuild() // <2>
   def buildInfo = Artifactory.newBuildInfo()
 
-  stage('SCM: checkout') {
-    git url: 'https://github.com/goern/jboss-eap-quickstarts.git', branch: 'acme-demo'
-  }
-
-  stage('Artifactory: configuration') {
+  stage('Artifactory: configuration') { // <3>
     artifactoryMaven.tool = "Maven3" // Tool name from Jenkins configuration
     artifactoryMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: artifactory
     artifactoryMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: artifactory
@@ -609,10 +644,63 @@ node('maven') { // this will use maven jenkins slave containers...
     buildInfo.retention maxBuilds: 10, maxDays: 7, deleteBuildArtifacts: true
   }
 
-  stage('Maven: build') {
+  stage('SCM: checkout') {
+    git url: 'https://github.com/goern/jboss-eap-quickstarts.git', branch: 'acme-demo'
+  }
+
+  stage('Maven: build') { // <4>
     artifactoryMaven.run pom: 'kitchensink/pom.xml', goals: 'clean install', buildInfo: buildInfo
   }
 }
 ----
+<1> define the Artifactory service to be used
+<2> some additional Artifactory configurations
+<3> configuration of the Maven build
+<4> use Maven with its Artifactory configuration to build
+
+This Jenkins pipeline snippet will define some Artifactory related variables and configure Maven related items of the Artifactory plugin. After the source code has been checked out, a Maven build using the Artifactory configuration is started. Any build artifacts will resist within the Maven container's storage, they are neither packaged into a container image, nor are they uploaded to Artifactory. Processing the build artifacts is the responsibility of follow on pipeline stages.
+
+A detailed documentation of the Artifactory Jenkins plugin configuration and usage is provided by https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+-+Working+With+the+Pipeline+Jenkins+Plugin#Artifactory-WorkingWiththePipelineJenkinsPlugin-CreatinganArtifactoryServerInstance[Artifactory - Working With the Pipeline Jenkins Plugin]
 
 == Pushing build artifacts to Artifactory
+
+To upload (or download) build artifacts to (from) Artifactory a corresponding spec needs to be defined as described by https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+-+Working+With+the+Pipeline+Jenkins+Plugin#Artifactory-WorkingWiththePipelineJenkinsPlugin-UploadingandDownloadingFiles[Uploading and Downloading Files] chapter of Artifactory documentation.
+
+Uploading the build artifacts will result in an updated buildInfo, which will then be published into Artifactory.
+
+The following snippet illustrates these basic steps.
+
+.Jenkinsfile snippet - uploading/pushing build artifacts
+[source]
+----
+def downloadSpec = """{ <1>
+  "files": [
+  ]
+}"""
+def uploadSpec = """{ <2>
+  "files": [
+    {
+      "pattern": "jboss-kitchensink.war",
+      "target": "libs-snapshot-local"
+    }
+  ]
+}"""
+
+node('maven') { // this will use maven jenkins slaves...
+  stage('Maven: upload artifact to repository') {
+    echo 'This stage should upload all artifacts to the central Repository'
+
+    artifactory.download(downloadSpec, buildInfo) <3>
+    artifactory.upload(uploadSpec, buildInfo)
+    artifactory.publishBuildInfo buildInfo <4>
+  }
+}
+----
+<1> define download spec
+<2> and upload spec
+<3> configure Artifactory to use the specs
+<4> and push the build info defined earlier
+
+TIP: The username and password configured within the Artifactory plugin configuration (included in the Jenkins container image) is used to upload, download or publish information to Artifactory.
+
+A detailed documentation of the Artifactory Jenkins plugin configuration and usage is provided by https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+-+Working+With+the+Pipeline+Jenkins+Plugin#Artifactory-WorkingWiththePipelineJenkinsPlugin-CreatinganArtifactoryServerInstance[Artifactory - Working With the Pipeline Jenkins Plugin]

@@ -1,0 +1,9 @@
+== Acknowledgements
+
+I would like to thank my team mates from Red Hat's System Design & Engineering group and the whole Atomic & OpenShift community for all their wisdom.
+
+Special thanks for giving food for thoughts and reviewing:
+
+* Aaron Weitekamp
+* Dirk Herrmann
+* Scott Collier
