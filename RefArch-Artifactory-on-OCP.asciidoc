@@ -1,6 +1,6 @@
 = JFrog Artifactory on OpenShift Container Platform 3.4
 Christoph Görn <goern@redhat.com>
-v0.1.0, 2017-Feb-16
+v0.2.0, 2017-Feb-20
 :doctype: book
 :title-logo-image: image:images/template/rh-ra-banner.png[scaledwidth=70%,align=center]
 :compat-mode!:
