@@ -92,6 +92,6 @@
       - artifactory
 
   - name: create Artifactory reverse proxy
-    command: oc new-app --template=artifactory-rev-proxy --param=DOCKER_REGISTRY_HOSTNAME="docker-registry-artifactory-test.apps.acme.e2e.bos.redhat.com"
+    command: "oc new-app --template=artifactory-rev-proxy --param=ARTIFACTORY_REVERSE_PROXY_HOSTNAME=docker-registry-{{  project_name }}.apps.acme.e2e.bos.redhat.com"
     tags:
       - artifactory
