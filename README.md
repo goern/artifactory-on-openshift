@@ -1,9 +1,6 @@
 # Artifactory
 
-This is Artifactory on OpenShift, a containerized version of Artifactory OSS
-with an OpenShift template.
-
-It is a proof of concept, Version 1.3.0
+This is Artifactory on OpenShift, a containerized version of Artifactory with an OpenShift template.
 
 ## Deploying Artifactory
 
@@ -16,12 +13,6 @@ Point your browser at the domainname of the route created by the template, use
 
 TIP: Any changes you do to the config files will be overwritten by the values
 obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immutable!
-
-## Open Issues
-
-### Updates
-
-### Backup
 
 ## Limitations
 
@@ -36,7 +27,7 @@ within the entrypoint of the container image.
 
 ## Copyright
 
-Copyright (C) 2016 Red Hat Inc.
+Copyright (C) 2016,2017 Red Hat Inc.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

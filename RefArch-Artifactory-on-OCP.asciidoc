@@ -1,36 +1,6 @@
-// These are shortcuts we could use all over the document/files
-:paas: Platform-as-a-Service
-:cdn: Red Hat Content Delivery Network
-:eap: Red Hat JBoss Enterprise Application Platform 6
-:osp7: Red Hat Enterprise Linux OpenStack Platform 7
-:ose3: OpenShift Enterprise 3
-:OCP: OpenShift Container Platform 3.4
-:MS-AD: Microsoft Active Directory
-:rhel7: Red Hat Enterprise Linux 7 Server
-:sat6: Red Hat Satellite 6
-:vcenter6: VMware vCenter 6
-:ose3ag: OpenShift Enterprise 3 by Red Hat architecture guide: Plan, deploy, and operate an open source Platform-as-a-Service (PaaS)
-:VCS: Version Control System
-:DNS: Domain Name System
-:IAM: Identity and Access Management
-:oos: out of scope for this Reference Implementation
-:RefArch: Reference Architecture
-:RefImpl: Reference Implementation
-:s2i: Source-to-Image
-
-// This could be used to configure the shared-doc content
-:glossary-openshift: true
-:ose3-sat61-refimpl: false
-:detailed-roles!: true
-
-// This is for document only
-:artifactory-on-openshift: true
-:artifactory-rev-proxy-on-openshift: true
-
-= JFrog Artifactory on {OCP}
+= JFrog Artifactory on OpenShift Container Platform 3.4
 Christoph Görn <goern@redhat.com>
 v0.1.0, 2017-Feb-16
-
 :doctype: book
 :title-logo-image: image:images/template/rh-ra-banner.png[scaledwidth=70%,align=center]
 :compat-mode!:
@@ -50,11 +20,30 @@ ifdef::backend-pdf[]
 :source-highlighter: pygments
 endif::[]
 
-[asbstract]
+// These are shortcuts we could use all over the document/files
+:OCP: OpenShift Container Platform 3.4
+:MS-AD: Microsoft Active Directory
+:rhel7: Red Hat Enterprise Linux 7 Server
+:ose3ag: OpenShift Enterprise 3 by Red Hat architecture guide: Plan, deploy, and operate an open source Platform-as-a-Service (PaaS)
+:IAM: Identity and Access Management
+:oos: out of scope for this Reference Implementation
+:RefArch: Reference Architecture
+:RefImpl: Reference Implementation
+:s2i: Source-to-Image
+
+// This could be used to configure the shared-doc content
+:glossary-openshift: true
+:ose3-sat61-refimpl: false
+:detailed-roles!: false
+
+// This is for document only
+:artifactory-on-openshift: true
+:artifactory-rev-proxy-on-openshift: true
+
+[abstract]
 //empty on purpose so that legal can be on separate page and not conflict with toc
 
 <<<
-
 100 East Davie Street +
 Raleigh NC 27601 USA +
 Phone: +1 919 754 3700 +
@@ -74,7 +63,6 @@ The GPG fingerprint of the security@redhat.com key is:
 CA 20 86 86 2B D6 9D FC 65 F6 EC C4 21 91 80 CD DB 42 A6 0E
 
 Send feedback to refarch-feedback@redhat.com
-
 <<<
 
 include::shared-doc/comments-feedback.adoc[]
