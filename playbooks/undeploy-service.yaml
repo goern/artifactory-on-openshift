@@ -44,15 +44,21 @@
   - name: delete all Artifactory components
     command: oc delete {{ item.type }} {{ item.name }}
     with_items:
+      - { type: build, name: --all }
       - { type: buildconfig, name: s2i-nginx-acme }
+      - { type: buildconfig, name: artifactory-rev-proxy }
       - { type: imagestream, name: artifactory }
+      - { type: imagestream, name: artifactory-rev-proxy }
       - { type: imagestream, name: s2i-nginx-acme }
       - { type: petset, name: artifactory }
       - { type: pod, name: artifactory-0 }
       - { type: dc, name: artifactory-postgresql }
+      - { type: dc, name: artifactory-rev-proxy }
       - { type: service, name: artifactory }
       - { type: service, name: artifactory-postgresql }
+      - { type: service, name: artifactory-rev-proxy }
       - { type: route, name: artifactory }
+      - { type: route, name: artifactory-rev-proxy }
       - { type: template, name: artifactory }
       - { type: template, name: artifactory-rev-proxy }
       - { type: configmap, name: artifactory-default-config }

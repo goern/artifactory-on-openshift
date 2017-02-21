@@ -128,6 +128,30 @@ objects:
       kind: Service
       name: artifactory-rev-proxy # <2>
 # end::Route[]
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: s2i-nginx-acme
+    labels:
+      application: artifactory-rev-proxy
+  spec:
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+        imageChange:
+          kind: ImageStreamTag
+          name: s2i-nginx:latest
+    source:
+      type: Git
+      git:
+        uri: https://github.com/goern/s2i-nginx.git
+    strategy:
+      type: Docker
+      dockerStrategy:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: 's2i-nginx-acme:latest'
 # tag::BuildConfig[]
 - kind: BuildConfig
   apiVersion: v1
@@ -148,9 +172,13 @@ objects:
     strategy:
       type: Source
       sourceStrategy:
-         from:
+        from:
           kind: ImageStreamTag
           name: "${S2I_NGINX_IMAGESTREAM}:latest" # <5>
+        env:
+          -
+            name: GIT_SSL_NO_VERIFY
+            value: 'true'
     output:
       to:
         kind: ImageStreamTag

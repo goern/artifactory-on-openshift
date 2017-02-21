@@ -76,11 +76,6 @@
     tags:
       - reverse-proxy
 
-  - name: create BuildConfig for ACME's NGINX builder
-    command: oc create -f https://raw.githubusercontent.com/goern/s2i-nginx/acme-it-dev/buildConfig.yaml
-    tags:
-      - reverse-proxy
-
   - name: create Artifactory default ConfigMap
     shell: cd .. && oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
     tags:
@@ -92,6 +87,6 @@
       - artifactory
 
   - name: create Artifactory reverse proxy
-    command: "oc new-app --template=artifactory-rev-proxy --param=ARTIFACTORY_REVERSE_PROXY_HOSTNAME=docker-registry-{{  project_name }}.apps.acme.e2e.bos.redhat.com"
+    command: "oc new-app --template=artifactory-rev-proxy --param=ARTIFACTORY_REVERSE_PROXY_HOSTNAME=docker-registry-{{  project_name }}.apps.acme.e2e.bos.redhat.com --param=SOURCE_REPOSITORY_REF=master"
     tags:
       - artifactory
