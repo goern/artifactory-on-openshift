@@ -2,7 +2,7 @@ FROM openshift/base-centos7
 
 MAINTAINER Christoph Görn <goern@redhat.com>
 
-ENV ARTIFACTORY_VERSION="5.0.1"
+ENV ARTIFACTORY_VERSION="5.1.0"
 ENV ARTIFACTORY_HOME="/var/opt/jfrog/artifactory"
 
 # the license lable makes a statement about this Dockerfile not the packages software
@@ -49,6 +49,6 @@ EXPOSE 8081
 USER 1013
 ENTRYPOINT [ "/usr/bin/run-artifactory.sh" ]
 
-ENV BUILD_VERSION 4
+ENV BUILD_VERSION 1
 LABEL build-date="2017-02-15" \
-      release="4"
+      release="1"
