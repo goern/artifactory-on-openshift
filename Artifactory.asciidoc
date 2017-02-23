@@ -7,25 +7,19 @@ As a central service of each company, Content Management (based on a software li
 software artifacts (source or binary) that are relevant for production use.
 The Content Governor will use different provided services to accomplish the
 tasks of the content management domain. For the purpose of this Reference
-Implementation we use JFrog Artifactory PRO (short: Artifactory).
+Implementation we use JFrog Artifactory Pro (short: Artifactory).
 
 Artifactory will not only be the central point of content ingestion, but will
 also be used as a repository for intermediate binary artifacts, such as
 container images or JAR files.
 
-From this central content repository container images will be pulled into the production environment.
+From this central content repository, container images will be pulled into the production environment.
 
 === Artifactory Components
 
-==== Artifactory PRO
+==== Artifactory Pro
 
-The main component is Artifactory PRO, a Java based application. It may be
-deployed on {OCP} or on a separate host as a standalone application. A base
-configuration of the application is done via a ConfigMap ({OCP} case) or
-classic configuration files (standalone case). Data is stored one volumes/disks
-and a (persistent) PostgreSQL database. Customization, such as creation of
-repositories required for ACME Corp IT-Dev operation, is done via an Ansible
-playbook.
+The main component is Artifactory Pro, a Java based application, which may be deployed on {OCP} or a separate host as a standalone application. A base configuration of the application is done via a ConfigMap ({OCP} case) or classic configuration files (standalone case). Data is stored one volumes/disks and a (persistent) PostgreSQL database. Customization, such as creation of repositories required for ACME Corp IT-Dev operation, is done via an Ansible playbook.
 
 ==== Storage and Database
 
@@ -33,15 +27,11 @@ Storage for artifacts and the PostgreSQL database is provided via NFS-backed Per
 
 ==== Reverse Proxy
 
-To implement https://www.jfrog.com/confluence/display/RTF/Docker+Registry#DockerRegistry-RegistriesandRepositories[Artifactory’s requirements on how to act as a docker registry] a
-NGINX based reverse proxy is implemented. This will rewrite URL and pass them
-on to the Artifactory PRO component.
+To implement https://www.jfrog.com/confluence/display/RTF/Docker+Registry#DockerRegistry-RegistriesandRepositories[Artifactory’s requirements on how to act as a docker registry] a NGINX based reverse proxy is implemented. This will rewrite URL and pass them on to the Artifactory Pro component.
 
-All components can be deployed and undeployed from a single {OCP} template
-via an Ansible playbook.
+All components can be deployed and undeployed from a single {OCP} template via an Ansible playbook.
 
-The following diagram will give an overview of the content management
-architecture.
+The following diagram provides an overview of the content management architecture.
 
 .Content Management Architecture Overview
 image::images/cont-mgmt-architecture.png[Content Management Architecture Overview]
@@ -153,7 +143,7 @@ Nov 23 15:14:56 acme-dev-infra-artifactory.acme.example.com systemd[1]: Started 
 
 To see Artifactory's log output `tail -f $ARTIFACTORY_HOME/logs/artifactory.log` could be used.
 
-TIP: Don’t forget to install your PRO license key via the web user interface.
+TIP: Don’t forget to install your Pro license key via the web user interface.
 
 endif::artifactory-on-openshift[]
 
@@ -173,7 +163,7 @@ cd container-image/artifactory
 make push
 ```
 
-Mind the Gap! There is a build id in the `Makefile` and the `artifactory.yaml` and in the `Dockerfile`
+IMPORTANT: There is a build id in the `Makefile` and the `artifactory.yaml` and in the `Dockerfile`
 
 `make push` will build and push the Pro and OSS version of Artifactory.
 
@@ -181,7 +171,7 @@ Mind the Gap! There is a build id in the `Makefile` and the `artifactory.yaml` a
 
 An OpenShift template is provided and could be used to instanciate new Artifactory
 applications. Therefore the template needs to be created on OpenShift: `oc create -f artifactory.yaml`.
-This assumes that you have create a project on OpenShift, for detailed instruction
+This assumes that you have created a project on OpenShift, for detailed instruction
 see Creating a Project[https://docs.openshift.org/latest/dev_guide/projects.html#create-a-project].
 
 ===== Creating Artifactory application
@@ -207,10 +197,9 @@ The following files must be present:
 -rw-rw-r--. 1 user group  5546 Oct 22 19:58 mimetypes.xml
 ```
 
-Especially `artifactory.lic` is required if you run the Pro version.
+The file `artifactory.lic` is required only if using Pro version.
 
-The following commands will create the config map and instanciate the new Artifactory
-application.
+The following commands will create the config map and instanciate the new Artifactory application.
 
 ```
 oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
@@ -225,11 +214,13 @@ is currently used, try `oc get route artifactory -o template --template={.spec.h
 This hostname should be set as variable `artifactory_host` in the playbook.
 
 To execute the playbook run `cd playbooks && ansible-playbook create-default-repositories.yaml`. If the
-repositories exists, failures will be shown, but ignored by the ansible execution.
+repositories exists, failures will be shown, but ignored by the Ansible execution.
 Please make sure that any Docker type repositories have Token Authentication
 enabled.
 
-These steps are implemented and provided for your convenience as an <<playbooks/deploy-service.yaml#Ansible playbook,Ansible playbook>>.
+WARNING: There is a race condition between the startup of PostgreSQL and Artifactory: you will see a Tomcat error page. Solving this is {oos}. An easy fix is to delete the artifactory-0 pod after it has started.
+
+These steps are implemented and provided for your convenience as an <<https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook>>.
 
 ===== Remove application from OCP
 
@@ -252,8 +243,7 @@ endif::artifactory-on-openshift[]
 ==== Creating Repositories
 
 To configure a set of standard repositories used in the course of the {RefImpl},
-an ansible playbook is provided at https://raw.githubusercontent.com/goern/artifactory-on-openshift/master/playbooks/create-default-repositories.yaml
-It will create the following repositories:
+an <<https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook is provided>> which will create the following repositories:
 
 .Artifactory default repositories
 [format="csv",cols="4"]
@@ -274,11 +264,9 @@ access-redhat-com-remote, Red Hat Customer Portal, remote docker, docker-registr
 docker-registry, ACME Docker Registry, virtual docker, none
 |====
 
-To run this ansible playbook, you need to set the environment variable `ARTIFACTORY_API_URL`,
-it must point to Artifactory's API endpoint, in out {RefImpl} it is `http://acme-dev-infra-artifactory.acme.example.com/artifactory`
+To run this Ansible playbook, set the environment variable `ARTIFACTORY_API_URL` to Artifactory's API endpoint, in our {RefImpl} it is `http://acme-dev-infra-artifactory.acme.example.com/artifactory`.
 
-The resulting Artifactory repository structure should like similar to the
-following screen shot.
+The resulting Artifactory repository structure should look similar to the following screen shot.
 
 .Artifactory Registry Overview
 image::images/acme-dev-infra-artifactory.acme.example.com-docker-registry.png[Artifactory Registry Overview]
@@ -535,7 +523,7 @@ image::images/artifactory-after-docker-push.png[New container image]
 
 Source-to-Image container images provided by Red Hat to be used with a BuildConfig are enabled to set proxies for Maven or NPM. This way Artifactory could be used to provide all the artifacts required during build time.
 
-Setting the required environment variables could either be archieved via the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#buildconfig-environment[BuildConfig] or by providing a custom layer ontop to Red Hat provided S2I container image. This layer will set the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#environment-files[environment variables file].
+Setting the required environment variables could either be achieved via the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#buildconfig-environment[BuildConfig] or by providing a custom layer ontop to Red Hat provided S2I container image. This layer will set the https://docs.openshift.com/container-platform/3.4/dev_guide/builds.html#environment-files[environment variables file].
 
 This {RefImpl} provides an example within the `container-image/s2i-nginx-acme/` directory. The generated image could be used with any BuildConfig for a NodeJS project. The same could be accomplished for Java/Maven based builds by setting `MAVEN_MIRROR_URL` within the BuildConfig.
 
@@ -589,7 +577,7 @@ In addition to the plugin itself, a default configuration could be added to the 
 
 How to https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-creating-jenkins-service-from-template[Creating a Jenkins Service from a Template] is described by the OpenShift documentation, please make sure that the Jenkins application is created from the ACME Corp Jenkins container image containing the Artifactory plugin.
 
-TIP: A fully working example of an Jenkins container image with Artifactory plugin and some other additional plugins is available online at https://github.com/goern/jenkins-acme
+TIP: A fully working example of an Jenkins container image with Artifactory plugin and additional plugins is available online at https://github.com/goern/jenkins-acme
 
 === Jenkinsfile example
 
@@ -658,7 +646,7 @@ node('maven') { // this will use maven jenkins slave containers...
 <3> configuration of the Maven build
 <4> use Maven with its Artifactory configuration to build
 
-This Jenkins pipeline snippet will define some Artifactory related variables and configure Maven related items of the Artifactory plugin. After the source code has been checked out, a Maven build using the Artifactory configuration is started. Any build artifacts will resist within the Maven container's storage, they are neither packaged into a container image, nor are they uploaded to Artifactory. Processing the build artifacts is the responsibility of follow on pipeline stages.
+This Jenkins pipeline snippet will define some Artifactory related variables and configure Maven related items of the Artifactory plugin. After the source code has been checked out, a Maven build using the Artifactory configuration is started. Any build artifacts will exist within the Maven container's storage, they are neither packaged into a container image, nor are they uploaded to Artifactory. Processing the build artifacts is the responsibility of follow on pipeline stages.
 
 A detailed documentation of the Artifactory Jenkins plugin configuration and usage is provided by https://wiki.jenkins-ci.org/display/JENKINS/Artifactory+-+Working+With+the+Pipeline+Jenkins+Plugin#Artifactory-WorkingWiththePipelineJenkinsPlugin-CreatinganArtifactoryServerInstance[Artifactory - Working With the Pipeline Jenkins Plugin]
 

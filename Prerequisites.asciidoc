@@ -1,12 +1,13 @@
 == Prerequisites
 
-This Reference Architecture requires a few things to be set up properly.
+This {RefImpl} requires a few things to be set up properly.
 
 === {ocp}
 
-All commands, playbooks or configurations require OpenShift Container Platform 3.4 or above. Please provide a correctly deployed environment. Please direct special attention to DNS setup.
+All commands, playbooks and configurations require {OCP} or above. Please provide a correctly deployed environment. Please direct special attention to DNS setup.
 
-To set up such an environment you can leverage <<ocp-on-vmware>> to learn how to deploy to an on premise VMware infrastructure or use <<ocp-on-aws>> to learn how to deploy to the Amazon public cloud.
+
+To set up such an environment, leverage <<ocp-on-vmware>> to deploy to an on premise VMware infrastructure or <<ocp-on-aws>> to deploy to the Amazon public cloud.
 
 === local client tools
 
@@ -26,9 +27,9 @@ WARNING: Due to a bug existing at the time of writing this {RefImpl} it is requi
 
 === An OpenShift project
 
-Please create a project to deploy Artifactory to. The user you are using must have all the permissions to create and OpenShift configuration item within this project. The user/project must have access to a certain number of PersistenVolumes:
+Please create a project to deploy Artifactory. The user must have all the permissions to create an OpenShift configuration item within this project. The user/project must have access to a certain number of PersistenVolumes:
 
-.required PersistenVolumes
+.required PersistentVolumes
 [options="header"]
 [frame="topbot",grid="none"]
 |====
