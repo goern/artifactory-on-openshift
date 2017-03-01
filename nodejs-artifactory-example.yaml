@@ -1,0 +1,174 @@
+kind: Template
+apiVersion: v1
+labels:
+  version: 1.0.0
+metadata:
+  annotations:
+    openshift.io/display-name: Node.js ACME Example
+    description: This is an example of NodeJS using Artifactory as a NPM mirror/cache
+    tags: artifactory,nodejs
+    version: 1.0.0
+    iconClass: icon-nodejs
+    template.openshift.io/long-description: >-
+      This template defines resources needed to develop a NodeJS application,
+      including a build configuration and application deployment configuration.
+      Builds will use an Artifactory repository for NPM, this has been preconfigured
+      by the Ops team, so that Devs dont have to care.
+    template.openshift.io/documentation-url: 'https://github.com/goern/artifactory-on-openshift'
+  name: nodejs-artifactory-example
+parameters:
+  - name: NAME
+    displayName: Name
+    description: The name assigned to all of the frontend objects defined in this template.
+    required: true
+    value: nodejs-artifactory-example
+  - name: MEMORY_LIMIT
+    displayName: Memory Limit
+    description: Maximum amount of memory the container can use.
+    required: true
+    value: 512Mi
+  - name: APPLICATION_DOMAIN
+    displayName: Application Hostname
+    description: >-
+      The exposed hostname that will route to the Node.js service, if left blank
+      a value will be defaulted.
+    value: ''
+objects:
+# tag::Service[]
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: '${NAME}'
+    annotations:
+      description: Exposes and load balances the application pods
+  spec:
+    ports:
+      - name: web
+        port: 8080
+        targetPort: 8080
+    selector:
+      name: '${NAME}'
+# end::Service[]
+# tag::Route[]
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: '${NAME}'
+  spec:
+    host: '${APPLICATION_DOMAIN}'
+    to:
+      kind: Service
+      name: '${NAME}'
+# end::Route[]
+# tag::DeploymentConfig[]
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: '${NAME}'
+  spec:
+    strategy:
+      type: Rolling
+    triggers:
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+            - nodejs-example
+          from:
+            kind: ImageStreamTag
+            name: '${NAME}:latest'
+      - type: ConfigChange
+    replicas: 1
+    selector:
+      name: '${NAME}'
+    template:
+      metadata:
+        name: '${NAME}'
+        labels:
+          name: '${NAME}'
+      spec:
+        containers:
+          - name: nodejs-example
+            image: ' '
+            ports:
+              - containerPort: 8080
+            readinessProbe:
+              timeoutSeconds: 3
+              initialDelaySeconds: 3
+              httpGet:
+                path: /
+                port: 8080
+            livenessProbe:
+              timeoutSeconds: 3
+              initialDelaySeconds: 30
+              httpGet:
+                path: /
+                port: 8080
+            resources:
+              limits:
+                memory: '${MEMORY_LIMIT}'
+            env: []
+# end::DeploymentConfig[]
+# tag::BuildConfigApplication[]
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: '${NAME}' # <1>
+  spec:
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+        imageChange:
+          kind: ImageStreamTag
+          name: nodejs-acme:4-11.13 # <2>
+    source:
+      type: Git
+      git:
+        uri: https://github.com/openshift/nodejs-ex # <3>
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: "nodejs-acme:4-11.13" # <4>
+    output:
+      to:
+        kind: ImageStreamTag
+        name: '${NAME}:latest' # <5>
+# end::BuildConfigApplication[]
+# tag::BuildConfigS2I[]
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: nodejs-acme # <1>
+  spec:
+    triggers:
+      - type: ConfigChange
+      - type: ImageChange
+    source:
+      type: Git
+      git:
+        uri: "https://github.com/goern/artifactory-on-openshift" # <2>
+      contextDir: "container-image/s2i-node-acme" # <3>
+    strategy:
+      type: Docker
+      dockerStrategy:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "nodejs-acme:4-11.13" # <4>
+# end::BuildConfigS2I[]
+# tag::ImageStreamS2I[]
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    description: Build and run NodeJS applications, ACME Corp's s2i-node using Artifactory
+    name: "nodejs-acme" # <1>
+# end::ImageStreamS2I[]
+# tag::ImageStreamApplication[]
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    description: ImageStream for our application
+    name: "nodejs-artifactory-example" # <1>
+# end::ImageStreamApplication[]

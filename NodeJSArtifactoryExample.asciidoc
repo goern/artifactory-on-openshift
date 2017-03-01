@@ -1,0 +1,30 @@
+
+[source, bash]
+----
+$ oc create -f nodejs-artifactory-example.yaml
+template "nodejs-artifactory-example" created
+$ oc new-app nodejs-artifactory-example
+--> Deploying template "nodejs-acme-example/nodejs-artifactory-example" to project nodejs-acme-example
+
+     Node.js ACME Example
+     ---------
+     This is an example of NodeJS using Artifactory as a NPM mirror/cache
+
+     * With parameters:
+        * Name=nodejs-artifactory-example
+        * Memory Limit=512Mi
+        * Application Hostname=
+
+--> Creating resources ...
+    service "nodejs-artifactory-example" created
+    route "nodejs-artifactory-example" created
+    deploymentconfig "nodejs-artifactory-example" created
+    buildconfig "nodejs-artifactory-example" created
+    buildconfig "nodejs-acme" created
+    imagestream "nodejs-acme" created
+--> Success
+    Build scheduled, use 'oc logs -f bc/nodejs-artifactory-example' to track its progress.
+    Build scheduled, use 'oc logs -f bc/nodejs-acme' to track its progress.
+    Run 'oc status' to view your app.
+$
+----

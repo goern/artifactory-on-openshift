@@ -78,7 +78,7 @@ objects:
             kind: ImageStreamTag
             name: "${REV_PROXY_IMAGESTREAM}:latest" # <1>
       - type: ConfigChange
-    replicas: 2
+    replicas: 1
     selector:
       name: artifactory-rev-proxy
     template:
@@ -92,26 +92,6 @@ objects:
             image: ' '
             ports:
               - containerPort: 8080
-            readinessProbe:
-              failureThreshold: 3
-              httpGet:
-                path: /
-                port: 8080
-                scheme: HTTP
-              initialDelaySeconds: 5
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 2
-            livenessProbe:
-              failureThreshold: 3
-              httpGet:
-                path: /
-                port: 8080
-                scheme: HTTP
-              initialDelaySeconds: 5
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 2
             resources:
               limits:
                 cpu: 25m
@@ -127,6 +107,9 @@ objects:
     to:
       kind: Service
       name: artifactory-rev-proxy # <2>
+    tls:
+      insecureEdgeTerminationPolicy: Allow
+      termination: edge
 # end::Route[]
 - kind: BuildConfig
   apiVersion: v1

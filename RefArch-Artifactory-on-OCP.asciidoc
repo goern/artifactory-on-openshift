@@ -43,7 +43,6 @@ endif::[]
 [abstract]
 //empty on purpose so that legal can be on separate page and not conflict with toc
 
-<<<
 100 East Davie Street +
 Raleigh NC 27601 USA +
 Phone: +1 919 754 3700 +
@@ -63,7 +62,6 @@ The GPG fingerprint of the security@redhat.com key is:
 CA 20 86 86 2B D6 9D FC 65 F6 EC C4 21 91 80 CD DB 42 A6 0E
 
 Send feedback to refarch-feedback@redhat.com
-<<<
 
 include::shared-doc/comments-feedback.adoc[]
 

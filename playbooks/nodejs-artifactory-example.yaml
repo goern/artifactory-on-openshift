@@ -1,0 +1,49 @@
+---
+- name: This is a NodeJS S2I example using Artifactory, see https://github.com/goern/artifactory-on-openshift
+  tags:
+    - openshift
+    - artifactory
+    - example
+
+  hosts: localhost
+  vars: # FIXME DRY
+    openshift_master_url: "{{ lookup('env','OCP_URL') }}"
+    token: "{{ lookup('env','OCP_TOKEN') }}"
+    project_name: nodejs-acme-example
+
+  tasks:
+  - name: verify oc version
+    shell: "oc version"
+    register: command_result
+    failed_when:
+      - "'oc v1.3.1' not in command_result.stdout"
+      - "'oc v3.3' not in command_result.stdout"
+      - "'oc v1.4.0' not in command_result.stdout"
+
+  - name: login to OpenShift using provided token
+    command: "oc login --insecure-skip-tls-verify=true --token {{ token }} {{ openshift_master_url }}"
+
+  - name: "make sure to use project {{ project_name }}"
+    command: "oc project {{ project_name }}"
+    register: project_exists
+    ignore_errors: true
+
+  - name: "create project {{ project_name }}"
+    command: "oc new-project {{ project_name }}"
+    when: project_exists | failed
+
+  - name: "delete all objects within project {{ project_name }}"
+    command: "oc delete all --all"
+    when: project_exists
+
+  - name: create template for artifactory
+    command: oc create -f ../nodejs-artifactory-example.yaml
+    register: artifactory_template_rc
+    ignore_errors: true
+
+  - name: replace existing template for artifactory
+    command: oc replace -f ../nodejs-artifactory-example.yaml
+    when: artifactory_template_rc | failed
+
+  - name: "create example NodeJS application"
+    command: "oc new-app nodejs-artifactory-example"
