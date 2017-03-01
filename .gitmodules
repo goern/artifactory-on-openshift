@@ -1,3 +1,0 @@
-[submodule "shared-doc"]
-	path = shared-doc
-	url = https://gitlab.cee.redhat.com/e2e/shared-doc.git 
