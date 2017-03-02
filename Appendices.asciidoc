@@ -27,8 +27,8 @@ include::tmp-artifactory-conf[]
 include::container-image/s2i-node-acme/Dockerfile[]
 ----
 
-=== S2I environment file
+=== ACME Corp S2I assemble script
 [source]
 ----
-include::container-image/s2i-node-acme/s2i/environment[]
+include::container-image/s2i-node-acme/s2i/bin/assemble[]
 ----

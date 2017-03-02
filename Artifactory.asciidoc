@@ -531,6 +531,7 @@ TIP: For a quick glimpse on this idea have a look at Appendix <<NodeJS S2I with 
 
 Both alternatives are feasible to utilize Artifactory as an artifact cache during build time. Using the S2I approach will give Ops a little more control over Dev, as the environment variables is set with a same default value, so that even glibly developers will use Artifactory to seed up builds and/or only consume content under control and provided by Artifactory.
 
+include::NodeJSArtifactoryExample.asciidoc[]
 
 == Configure an OpenShift buildpipeline to use Artifactory
 
