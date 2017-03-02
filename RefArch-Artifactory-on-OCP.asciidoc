@@ -30,6 +30,8 @@ endif::[]
 :RefArch: Reference Architecture
 :RefImpl: Reference Implementation
 :s2i: Source-to-Image
+:artifactory: JFrog Artifactory
+:acme: ACME Corp
 
 // This could be used to configure the shared-doc content
 :glossary-openshift: true

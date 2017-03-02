@@ -41,7 +41,7 @@ image::images/cont-mgmt-architecture.png[Content Management Architecture Overvie
 
 ==== Administration by Content Governor (1)
 The first interaction pattern implemented is related to content management,
-including creation of local and remote repositories etc. A role call Content
+including creation of local and remote repositories etc. A role called Content
 Governor would either execute manual task via the Artifactory web user interface
 or automated tasks via the REST API. Both interfaces offer the same functions.
 
@@ -59,11 +59,7 @@ Artifactory configuration and repository data is stored in a PostgreSQL database
 and on a persistent storage volume, provided by a NFS server (5).
 
 ==== Proxying Content from remote Repositories (6)
-All so called remote repositories implement a caching proxy for remote/upstream
-repositories. Content within these repositories is cached for a certain amount
-of time on storage. This is especially useful to speed up {OCP} Builds, as
-required content must not be downloaded from the internet but from Artifactory’s
-caching repository.
+All remote repositories implement a caching proxy for remote/upstream repositories. Content within these repositories is cached for a certain amount of time on storage. This is especially useful to speed up {OCP} Builds, as required content must not be downloaded from the internet but from Artifactory’s caching repository.
 
 
 === Implementation of Content Management
@@ -149,14 +145,14 @@ endif::artifactory-on-openshift[]
 
 ifdef::artifactory-on-openshift[]
 
-The following chapters will guide you thru the steps to build container images for Artifactory, create an application template for Artifactory on OpenShift and deploy all the components to OpenShift by using this template.
+The following chapters will guide you through the steps to build container images for Artifactory, create an application template for Artifactory on OpenShift and deploy all the components to OpenShift by using this template.
 
 ===== Building the Artifactory container image
 
 Please change to `container-image/artifactory` and have a look at the `Makefile`, change
 `REPOSITORY_NAME` according to your needs.
 
-A simple `make push` should do the rest.
+A simple `make push` will do the rest.
 
 ```
 cd container-image/artifactory
@@ -203,7 +199,8 @@ The following commands will create the config map and instanciate the new Artifa
 
 ```
 oc create configmap artifactory-default-config --from-file=etc-opt-jfrog-artifactory-dist/
-oc new-app --template=acme-dev-infra/artifactory --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro # or artifactory-oss
+oc new-app --template=acme-dev-infra/artifactory \
+ --param=ARTIFACTORY_IMAGE_NAME=artifactory-pro # or artifactory-oss
 ```
 
 ===== Initializing Artifactory
