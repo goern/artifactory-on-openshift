@@ -42,15 +42,12 @@ if [ ! -z $https_proxy ]; then
 	npm config set https-proxy $https_proxy
 fi
 
-# Change the npm registry mirror if provided
-if [ -n "$NPM_MIRROR" ]; then
-	npm config set registry $NPM_MIRROR
-fi
+# tag::ACME_NPM_MIRROR[]
+# Set the npm registry mirror
+npm config set registry http://acme-dev-infra-artifactory.acme.e2e.bos.redhat.com:8081/artifactory/api/npm/npm-org-remote
+# end::ACME_NPM_MIRROR[]
 
 echo "---> Debugging information"
-echo "----> Environment Variables"
-env
-
 echo "----> npm config"
 npm config get
 

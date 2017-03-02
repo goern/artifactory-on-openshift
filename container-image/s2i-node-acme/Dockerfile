@@ -10,4 +10,3 @@ LABEL io.k8s.description="Platform for building and running Node.js applications
       com.redhat.deployments-dir="/opt/app-root/src"
 
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
-COPY ./s2i/environment $STI_SCRIPTS_PATH
