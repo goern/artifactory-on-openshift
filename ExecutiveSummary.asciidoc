@@ -7,6 +7,7 @@ Artifactory gives a DevOps team the tools to manage the flow of artifacts from e
 Artifactory provides security and access control at several levels. From restricting complete repositories down to restricting a single binary.
 
 In combination with {OCP}, Artifactory provides a scalable solution. As the use of components and artifacts in software development continues to grow, developers face new challenges:
+
   * managing dependencies and keep artifacts consist
   * know what artifacts are 'good for production'
   * keep continuous build processes fast
