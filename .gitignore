@@ -2,3 +2,7 @@ etc-opt-jfrog-artifactory-dist/artifactory.lic
 **/*retry
 RefArch-Artifactory-on-OCP.pdf
 tmp-artifactory-conf
+openshift.local.config/
+openshift.local.data/
+openshift.local.pv/
+.vscode/
