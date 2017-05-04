@@ -145,23 +145,11 @@ endif::artifactory-on-openshift[]
 
 ifdef::artifactory-on-openshift[]
 
-The following chapters will guide you through the steps to build container images for Artifactory, create an application template for Artifactory on OpenShift and deploy all the components to OpenShift by using this template.
+The following chapters will guide you through the steps to prepare the deployment of JFrog Artifactory container images, create an application template for Artifactory on OpenShift and deploy all the components to OpenShift by using this template.
 
-===== Building the Artifactory container image
+===== JFrog Artifactory container image
 
-Please change to `container-image/artifactory` and have a look at the `Makefile`, change
-`REPOSITORY_NAME` according to your needs.
-
-A simple `make push` will do the rest.
-
-```
-cd container-image/artifactory
-make push
-```
-
-IMPORTANT: There is a build id in the `Makefile` and the `artifactory.yaml` and in the `Dockerfile`
-
-`make push` will build and push the Pro and OSS version of Artifactory.
+JFrog does provide Artifactory container images, these will be use with the OpenShift template of this {RefImpl}.
 
 ===== Creating Artifactory template
 
@@ -178,7 +166,16 @@ a ConfigMap will be used, this is not created by the template. Please create
 it beforehand.
 
 If you want to use the Pro version of Artifactory, please provide a license key
-via the config map, and overwrite the *ARTIFACTORY_IMAGE_NAME* of the template.
+via the config map.
+
+JFrog Artifactory container images require root permission during startup, so it is required that you create an OpenShift service account and grant the privileges to run as any user id:
+
+```
+oc create serviceaccount artifactory
+oc adm policy add-scc-to-user anyuid -z artifactory
+```
+
+WARNING: To perform the second command, you need to be at least an OpenShift admin or cluster-admin.
 
 ===== Artifactory default Config Map
 
@@ -193,7 +190,7 @@ The following files must be present:
 -rw-rw-r--. 1 user group  5546 Oct 22 19:58 mimetypes.xml
 ```
 
-The file `artifactory.lic` is required only if using Pro version.
+The file `artifactory.lic` is required only if using Pro version. A Pro version is required to use the REST API or docker repositories.
 
 The following commands will create the config map and instanciate the new Artifactory application.
 
@@ -215,9 +212,7 @@ repositories exists, failures will be shown, but ignored by the Ansible executio
 Please make sure that any Docker type repositories have Token Authentication
 enabled.
 
-WARNING: There is a race condition between the startup of PostgreSQL and Artifactory: you will see a Tomcat error page. Solving this is {oos}. An easy fix is to delete the artifactory-0 pod after it has started.
-
-These steps are implemented and provided for your convenience as an <<https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook>>.
+These steps are implemented and provided for your convenience as an <<https://gitlab.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook>>.
 
 ===== Remove application from OCP
 
@@ -240,7 +235,7 @@ endif::artifactory-on-openshift[]
 ==== Creating Repositories
 
 To configure a set of standard repositories used in the course of the {RefImpl},
-an <<https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook is provided>> which will create the following repositories:
+an <<https://gitlab.com/goern/artifactory-on-openshift/blob/master/playbooks/create-default-repositories.yaml,Ansible playbook is provided>> which will create the following repositories:
 
 .Artifactory default repositories
 [format="csv",cols="4"]
@@ -294,7 +289,7 @@ available to your {OCP}.
 
 Details how to create a S2I image can be found as part of the https://access.redhat.com/documentation/en/openshift-container-platform/3.3/paged/using-images/chapter-2-source-to-image-s2i[{OCP} documentation] and online at https://github.com/openshift/source-to-image[OpenShift's github repository].
 
-TIP: You can find an example S2I NGINX repository at https://github.com/goern/s2i-nginx/tree/acme-it-dev
+TIP: You can find an example S2I NGINX repository at https://gitlab.com/goern/s2i-nginx/tree/acme-it-dev
 
 In summary, the NGINX Source-to-Image will copy and html, jpg, css (so called static files), a default NGINX configuration and all configuration snippets to a new container image. This new container image container a Red Hat Software Collections based installation of NGINX and a corresponding container entry point. If this image is deployed to {OCP} it will start NGINX on port 8080 and load all the configuration snippets and starts serving the static files.
 
@@ -304,7 +299,7 @@ So the next step will be, to configure the reverse proxy.
 
 ==== Obtaining NGINX configuration snippet from Artifactory
 
-After you have created the S2I NGINX repository you need to add the Artifactory configuration snippet. Artifactory provides a restful API to do this, and the configuration snippet could be obtained very simple via `curl -gO http://artifactory.example.com:8081/api/system/configuration/reverseProxy/nginx`. Move this file into `etc/conf.d/artifactory.conf` of the S2I NGINX repository and add and commit it too.
+After you have created the S2I NGINX repository you need to add the Artifactory configuration snippet. Artifactory provides a restful API to do this, and the configuration snippet could be obtained very simple via `curl -gO http://artifactory.example.com/api/system/configuration/reverseProxy/nginx`. Move this file into `etc/conf.d/artifactory.conf` of the S2I NGINX repository and add and commit it too.
 
 The repository should look simular to this:
 
@@ -329,7 +324,7 @@ total 4
 <2> This is the Artifactory configuration snippet retrieved from the restful API endpoint
 <3> And this is a simple HTML not really needed to run the reverse proxy
 
-TIP: Again, you can find an example repository at https://github.com/goern/artifactory-on-openshift/tree/master/container-image/reverse-proxy-nginx
+TIP: Again, you can find an example repository at https://gitlab.com/goern/artifactory-on-openshift/tree/master/container-image/reverse-proxy-nginx
 
 ==== Create NGINX container image using Source-to-Image
 
@@ -395,7 +390,7 @@ include::reverse-proxy.yaml[tags=DeploymentConfig]
 
 ==== Using Ansible to deploy the NGINX-based reverse proxy application
 
-All these objects could be created from an {OCP} template, and this could be automated with an Ansible playbook. Such a playbook is provided as https://github.com/goern/artifactory-on-openshift/blob/master/playbooks/deploy-service.yaml[`playbooks/deploy-service.yaml`]. All the tasks have been tagged, so you can easily select either to deploy Artifactory itself, or just the NGINX-based reverse proxy.
+All these objects could be created from an {OCP} template, and this could be automated with an Ansible playbook. Such a playbook is provided as https://gitlab.com/goern/artifactory-on-openshift/blob/master/playbooks/deploy-service.yaml[`playbooks/deploy-service.yaml`]. All the tasks have been tagged, so you can easily select either to deploy Artifactory itself, or just the NGINX-based reverse proxy.
 
 To deploy only the reverse proxy make sure that the following environment variables are set:
 
@@ -413,7 +408,7 @@ Use the Ansible playbook to deploy the NGINX-based reverse proxy for Artifactory
 [source,bash]
 ----
 $ ansible-playbook playbooks/deploy-service.yaml  --tags reverse-proxy
-PLAY [Deploy Artifactory, see https://github.com/goern/artifactory-on-openshift] ***
+PLAY [Deploy Artifactory, see https://gitlab.com/goern/artifactory-on-openshift] ***
 
  [... output delete ...]
 
@@ -445,7 +440,7 @@ Next step is to get the reverse proxy configuration for NGINX from Artifactoryâ€
 [source, bash]
 ----
 $ cd /etc/opt/rh/rh-nginx18/nginx/conf.d/
-$ curl -gO http://artifactory.example.com:8081/api/system/configuration/reverseProxy/nginx
+$ curl -gO http://artifactory.example.com/api/system/configuration/reverseProxy/nginx
 $ systemctl start rh-nginx18-nginx
 ----
 
@@ -575,7 +570,7 @@ In addition to the plugin itself, a default configuration could be added to the 
 
 How to https://access.redhat.com/documentation/en/openshift-container-platform/3.4/single/using-images/#jenkins-creating-jenkins-service-from-template[Creating a Jenkins Service from a Template] is described by the OpenShift documentation, please make sure that the Jenkins application is created from the ACME Corp Jenkins container image containing the Artifactory plugin.
 
-TIP: A fully working example of an Jenkins container image with Artifactory plugin and additional plugins is available online at https://github.com/goern/jenkins-acme
+TIP: A fully working example of an Jenkins container image with Artifactory plugin and additional plugins is available online at https://gitlab.com/goern/jenkins-acme
 
 === Jenkinsfile example
 
@@ -597,7 +592,7 @@ spec:
     contextDir: kitchensink <2>
     git:
       ref: acme-demo <3>
-      uri: https://github.com/goern/jboss-eap-quickstarts.git <1>
+      uri: https://gitlab.com/goern/jboss-eap-quickstarts.git <1>
     type: Git
   output:
     to:
@@ -631,7 +626,7 @@ node('maven') { // this will use maven jenkins slave containers...
   }
 
   stage('SCM: checkout') {
-    git url: 'https://github.com/goern/jboss-eap-quickstarts.git', branch: 'acme-demo'
+    git url: 'https://gitlab.com/goern/jboss-eap-quickstarts.git', branch: 'acme-demo'
   }
 
   stage('Maven: build') { // <4>

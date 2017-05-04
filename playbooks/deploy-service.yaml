@@ -1,5 +1,5 @@
 ---
-- name: Deploy Artifactory, see https://github.com/goern/artifactory-on-openshift
+- name: Deploy Artifactory, see https://gitlab.com/RHsyseng/artifactory-on-openshift
   tags:
     - openshift
     - artifactory
@@ -11,6 +11,7 @@
     token: "{{ lookup('env','OCP_TOKEN') }}"
     project_name: artifactory-test
     artifactory_pro_or_oss: pro
+    artifactory_version: 5.2.1
 
   tasks:
   - name: verify oc version
@@ -20,6 +21,8 @@
       - "'oc v1.3.1' not in command_result.stdout"
       - "'oc v3.3' not in command_result.stdout"
       - "'oc v1.4.0' not in command_result.stdout"
+      - "'openshift v3.5' not in command_result.stdout"
+      - "'openshift v1.5' not in command_result.stdout"
     tags:
       - artifactory
       - reverse-proxy
@@ -81,8 +84,8 @@
     tags:
       - artifactory
 
-  - name: "create Artifactory {{ artifactory_pro_or_oss }} application"
-    command: "oc new-app --template=artifactory --param=ARTIFACTORY_VERSION=4.14.1-3 --param=ARTIFACTORY_IMAGE_NAME=artifactory-{{ artifactory_pro_or_oss }} --param=ARTIFACTORY_REPOSITORY_NAME=goern-docker-registry.bintray.io/goern"
+  - name: "create Artifactory {{ artifactory_pro_or_oss }} {{ artifactory_version }} application"
+    command: "oc new-app --template=artifactory"
     tags:
       - artifactory
 

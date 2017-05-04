@@ -1,6 +1,6 @@
-= JFrog Artifactory on OpenShift Container Platform 3.4
+= JFrog Artifactory on OpenShift Container Platform 3.5
 Christoph Görn <goern@redhat.com>
-v0.4.0, 2017-Mar-01
+v0.5.0, 2017-May-01
 :doctype: book
 :title-logo-image: image:images/template/rh-ra-banner.png[scaledwidth=70%,align=center]
 :compat-mode!:
@@ -21,7 +21,7 @@ ifdef::backend-pdf[]
 endif::[]
 
 // These are shortcuts we could use all over the document/files
-:OCP: OpenShift Container Platform 3.4
+:OCP: OpenShift Container Platform 3.5
 :MS-AD: Microsoft Active Directory
 :rhel7: Red Hat Enterprise Linux 7 Server
 :ose3ag: OpenShift Enterprise 3 by Red Hat architecture guide: Plan, deploy, and operate an open source Platform-as-a-Service (PaaS)
