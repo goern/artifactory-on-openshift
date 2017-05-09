@@ -14,18 +14,18 @@ Each developer is now free to use this service or not. If it should be used, it 
 
 The second alternative is more restrictive, and does not provide any configuration option to the developer. In fact it enforces a policy set by DevOps: "Only NPM packages from {acme}'s NPM registry must be used with builds." To archive this, DevOps provides a NodeJS {s2i} container image, while removing any other provided by Red Hat, that is used by Devs.
 
-With https://github.com/goern/artifactory-on-openshift[artifactory-on-openshift] a whole example is provided. It consists of:
+With https://gitlab.com/goern/artifactory-on-openshift[artifactory-on-openshift] a whole example is provided. It consists of:
 
 1. an ImageStream to represent {acme}'s NodeJS {s2i} container image
-2. a BuildConfig to create that https://github.com/goern/artifactory-on-openshift/tree/master/container-image/s2i-node-acme[image containing {acme} configuration]
+2. a BuildConfig to create that https://gitlab.com/goern/artifactory-on-openshift/tree/master/container-image/s2i-node-acme[image containing {acme} configuration]
 3. a BuildConfig for the https://github.com/openshift/nodejs-ex[OpenShift NodeJS example]
-4. a https://github.com/goern/artifactory-on-openshift/blob/master/nodejs-artifactory-example.yaml[Template to create all these configuration items]
+4. a https://gitlab.com/goern/artifactory-on-openshift/blob/master/nodejs-artifactory-example.yaml[Template to create all these configuration items]
 
 To fully deploy this example, use the following steps:
 
 [source, bash]
 ----
-$ oc create -f https://github.com/goern/artifactory-on-openshift/blob/master/nodejs-artifactory-example.yaml
+$ oc create -f https://gitlab.com/goern/artifactory-on-openshift/blob/master/nodejs-artifactory-example.yaml
 template "nodejs-artifactory-example" created
 $ oc new-app nodejs-artifactory-example
 --> Deploying template "nodejs-acme-example/nodejs-artifactory-example" to project nodejs-acme-example

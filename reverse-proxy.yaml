@@ -22,7 +22,7 @@ parameters:
     description: The URL of the repository with your application source code.
     displayName: Git Repository URL
     required: true
-    value: http://gogs-acme-dev-infra.apps.acme.e2e.bos.redhat.com/goern/artifactory-on-openshift.git
+    value: http://gitlab.com/goern/artifactory-on-openshift.git
   - name: SOURCE_REPOSITORY_REF
     displayName: Git Reference
     description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
@@ -47,8 +47,9 @@ objects:
   metadata:
     name: artifactory-rev-proxy # <1>
     annotations:
-      description: 'NGINX based reverse proxy for Artifactory Docker repositories'
+      description: NGINX based reverse proxy for Artifactory Docker repositories
       service.alpha.openshift.io/dependencies: '[{"name":"artifactory","namespace":"","kind":"Service"}]'
+      service.alpha.openshift.io/serving-cert-secret-name: artifactory-nginx
   spec:
     ports:
       -
@@ -96,6 +97,14 @@ objects:
               limits:
                 cpu: 25m
                 memory: 16Mi
+            volumeMounts:
+            - name: generated-certificate-volume
+              mountPath: /opt/app-root/etc/
+              readOnly: true
+        volumes:
+        - name: generated-certificate-volume
+          secret:
+            secretName: artifactory-nginx
 # end::DeploymentConfig[]
 # tag::Route[]
 - kind: Route
@@ -127,7 +136,7 @@ objects:
     source:
       type: Git
       git:
-        uri: https://github.com/goern/s2i-nginx.git
+        uri: https://gitlab.com/goern/s2i-nginx.git
     strategy:
       type: Docker
       dockerStrategy:

@@ -45,4 +45,4 @@ Throughout the course of this {RefImpl} we use the project `artifactory-test`.
 
 === Clone this {RefImpl}
 
-To use the Ansible playbooks and {ocp} configurations provided by this {RefImpl} you need to clone https://github.com/goern/artifactory-on-openshift to your local workstation.
+To use the Ansible playbooks and {ocp} configurations provided by this {RefImpl} you need to clone https://gitlab.com/goern/artifactory-on-openshift to your local workstation.

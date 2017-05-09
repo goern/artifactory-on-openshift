@@ -14,7 +14,7 @@ metadata:
       including a build configuration and application deployment configuration.
       Builds will use an Artifactory repository for NPM, this has been preconfigured
       by the Ops team, so that Devs dont have to care.
-    template.openshift.io/documentation-url: 'https://github.com/goern/artifactory-on-openshift'
+    template.openshift.io/documentation-url: 'https://gitlab.com/goern/artifactory-on-openshift'
   name: nodejs-artifactory-example
 parameters:
   - name: NAME
