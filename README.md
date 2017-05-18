@@ -2,28 +2,7 @@
 
 This is Artifactory on OpenShift, a containerized version of Artifactory with an OpenShift template.
 
-## Deploying Artifactory
-
-For a detailed description see Artifactory.asciidoc
-
-## Using Artifactory
-
-Point your browser at the domainname of the route created by the template, use
-`oc get route` to see the current value.
-
-TIP: Any changes you do to the config files will be overwritten by the values
-obtained from the ConfigMap `artifactory-default-config`. Infrastructure is immutable!
-
-## Limitations
-
-The PostgreSQL service create by the provided template is a single node, so
-there is no redundancy or scale up...
-
-The Artifactory service has no scale up feature, it must not be scale to more
-than one pod.
-
-Storage configuration of Artifactory expects to use PostgreSQL, its hard coded
-within the entrypoint of the container image.
+All the work has been summarized in [JFrog Artifactory on OpenShift Container Platform](https://access.redhat.com/documentation/en-us/reference_architectures/2017/html-single/jfrog_artifactory_on_openshift_container_platform/).
 
 ## Copyright
 

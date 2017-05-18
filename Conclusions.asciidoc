@@ -1,9 +1,0 @@
-== Conclusions
-
-Within this {RefImpl} we have shown how to deploy JFrog Artifactory on {ocp}, how to use it with {OCP} Source-to-Image builds and with {OCP} Pipeline builds, finally uploading build artifacts and build info to Artifactory was explored.
-
-Using these technologies will not only result in faster build times, but also in a more controlled build tool chain and build environment: knowing which source or binary artifacts are available within a company, and the JFrog Artifactory's capabilities to filter artifacts and repositories is essential to the stability and security of applications.
-
-Leveraging {OCP} as a platform to deploy JFrog Artifactory onto gives Operators a flexible and scalable platform to build on.
-
-This {RefImpl} could be used as part of any end-to-end content management strategy for containerized applications.  
